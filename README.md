@@ -67,6 +67,8 @@ Open `video.html?format=feed&t=4` in a browser to look at any moment while you e
 
 - **Sound**: effects synthesised by the engine and placed on the visible actions (whoosh, click, pop, tap,
   chime…), music of your own mixed under them.
+- **Voice-over**: Piper (free, offline), Google Cloud Text-to-Speech or a recorded voice; each line timed by the
+  check, the music ducking under it.
 - **4 formats from one page**: story, feed, square and landscape, each template laid out and checked in all four.
 
 Every frame is computed from time `t`, so renders are identical every time, at any frame rate, with no screen

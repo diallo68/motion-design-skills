@@ -41,28 +41,37 @@ export function ensureSfx() {
 }
 
 // Cues come from the page (window.soundCues()): [{ at, sfx, gain }]. A cue may name an effect of the library or a
-// file in the project (assets/sfx/door.wav). Writes a stereo WAV of the video's length.
-export function mix({ cues, root, duration, out, music, musicVolume = 0.55 }) {
-  const inputs = []; const chains = [];
-  let k = 0;
-  for (const c of cues) {
+// file in the project (assets/sfx/door.wav). voice: [{ at, file }], the voice-over, cleaned up and laid on top while
+// the music ducks under it. Writes a stereo WAV exactly as long as the video.
+export function mix({ cues, root, duration, out, music, musicVolume = 0.55, voice = [] }) {
+  const args = []; const chains = []; const bus = [];
+  let n = 0;                                                  // ffmpeg input index
+  const input = (...a) => { args.push(...a); return n++; };
+  const at = (t) => { const ms = Math.max(0, Math.round(t * 1000)); return `adelay=${ms}|${ms}`; };
+  const fmt = 'aformat=sample_rates=48000:channel_layouts=stereo';
+
+  const sfxGain = voice.length ? 0.7 : 1;                    // effects step back when someone speaks
+  cues.forEach((c, j) => {
     const file = SFX[c.sfx] ? join(SFX_DIR, `${c.sfx}.wav`) : join(root, c.sfx);
-    if (!existsSync(file)) { console.warn(`sound: no effect or file named ${c.sfx}`); continue; }
-    inputs.push('-i', file);
-    const ms = Math.max(0, Math.round(c.at * 1000));
-    chains.push(`[${k}]aformat=sample_rates=48000:channel_layouts=stereo,adelay=${ms}|${ms},volume=${c.gain ?? 1}[c${k}]`);
-    k++;
+    if (!existsSync(file)) { console.warn(`sound: no effect or file named ${c.sfx}`); return; }
+    chains.push(`[${input('-i', file)}]${fmt},${at(c.at)},volume=${((c.gain ?? 1) * sfxGain).toFixed(3)}[s${j}]`); bus.push(`[s${j}]`);
+  });
+
+  let duckKey = null;
+  if (voice.length) {
+    voice.forEach((v, j) => chains.push(`[${input('-i', v.file)}]${fmt},highpass=f=80,acompressor=threshold=0.1:ratio=3:attack=5:release=120:makeup=2,${at(v.at)}[v${j}]`));
+    chains.push(`${voice.map((_, j) => `[v${j}]`).join('')}amix=inputs=${voice.length}:normalize=0:duration=longest,apad=whole_dur=${duration}${music ? ',asplit=2[voice][key]' : '[voice]'}`);
+    bus.push('[voice]'); if (music) duckKey = '[key]';
   }
   if (music) {
-    inputs.push('-stream_loop', '-1', '-i', music);
-    chains.push(`[${k}]aformat=sample_rates=48000:channel_layouts=stereo,atrim=0:${duration},volume=${musicVolume},afade=t=in:d=0.4,afade=t=out:st=${Math.max(0, duration - 1.2)}:d=1.2[c${k}]`);
-    k++;
+    const m = input('-stream_loop', '-1', '-i', music);
+    const shaped = `[${m}]${fmt},atrim=0:${duration},volume=${musicVolume},afade=t=in:d=0.4,afade=t=out:st=${Math.max(0, duration - 1.2)}:d=1.2`;
+    chains.push(duckKey ? `${shaped}[mus];[mus]${duckKey}sidechaincompress=threshold=0.02:ratio=10:attack=15:release=450[music]` : `${shaped}[music]`);
+    bus.push('[music]');
   }
-  // a silent bed sets the length, so the mix is exactly as long as the video
-  inputs.push('-f', 'lavfi', '-t', String(duration), '-i', 'anullsrc=r=48000:cl=stereo');
-  chains.push(`[${k}]anull[c${k}]`); k++;
-  const graph = `${chains.join(';')};${Array.from({ length: k }, (_, i) => `[c${i}]`).join('')}amix=inputs=${k}:normalize=0:duration=longest,atrim=0:${duration},alimiter=limit=0.9[a]`;
-  const r = ff([...inputs, '-filter_complex', graph, '-map', '[a]', '-c:a', 'pcm_s16le', out]);
+  chains.push(`[${input('-f', 'lavfi', '-t', String(duration), '-i', 'anullsrc=r=48000:cl=stereo')}]anull[bed]`); bus.push('[bed]');
+  const graph = `${chains.join(';')};${bus.join('')}amix=inputs=${bus.length}:normalize=0:duration=longest,atrim=0:${duration},alimiter=limit=0.9[a]`;
+  const r = ff([...args, '-filter_complex', graph, '-map', '[a]', '-c:a', 'pcm_s16le', out]);
   if (r.status) throw new Error(`sound mix failed: ${r.stderr}`);
-  return k;
+  return bus.length;
 }

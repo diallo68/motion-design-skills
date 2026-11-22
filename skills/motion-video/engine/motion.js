@@ -16,6 +16,8 @@
 //   data-cam="2/.6 1.8 0 -240; 4/.5 1 0 0"  camera on a wrapper: at/duration scale x y [ease], states in order
 //   data-become="9.9/.6"          the element grows past the frame (its fill becomes the next scene)
 //   data-from="#button"           a .flood or iris starts from the centre of that element (at its data-in time)
+//   data-vo="Bloqué ?"            a voice-over line said when the element enters (data-vo-at="1.2" to move it);
+//                                 window.VOICE = [{ at, text } | { at, file }]; <body data-voice="piper:fr_FR-siwis-medium">
 //   <body data-sfx="auto">        sound effects on the visible actions (render.mjs mixes them); data-sfx="pop" on an
 //                                 element sets its sound (at its entrance), "pop@3.2:0.6" a time and gain, "none" mutes it
 // URL parameters: ?format=story|feed|square|landscape  &t=3.5 (preview a frame in a browser)
@@ -258,6 +260,19 @@
     // one sound at a time per kind: drop repeats closer than 0.15 s
     cues.sort((a, b) => a.at - b.at);
     return cues.filter((c, i) => c.at < window.DURATION && !cues.slice(0, i).some((p) => p.sfx === c.sfx && c.at - p.at < 0.15));
+  };
+
+  // ---------- voice-over lines (read by render.mjs and check.mjs) ----------
+  window.voiceLines = () => {
+    compile();
+    const lines = [...(window.VOICE || [])].map((l) => ({ ...l }));
+    for (const el of document.querySelectorAll('[data-vo]')) {
+      const at = el.dataset.voAt !== undefined ? +el.dataset.voAt : el.dataset.in ? parse(el.dataset.in, 0).at
+        : el.dataset.words ? +el.dataset.words.split(',')[0] : el.dataset.show ? +el.dataset.show.split(',')[0] : 0;
+      lines.push({ at, text: el.dataset.vo });
+    }
+    lines.sort((a, b) => a.at - b.at);
+    return { voice: document.body.dataset.voice || null, rate: +(document.body.dataset.voiceRate || 1), lines };
   };
 
   window.addEventListener('load', () => seek(+(params.get('t') || 0)));

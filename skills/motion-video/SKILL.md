@@ -137,6 +137,14 @@ node engine/render.mjs video.html --sfx off           # silent
   `data-sfx="thud@4.2:0.8"` sets one (effects: `whoosh swoosh pop click tap chime thud riser`, or a file in the
   project). They are synthesised by the engine, so they carry no licence. Sound only what moves on screen; a
   film where everything clicks sounds cheap.
+- **Voice-over** (optional): write the lines in the storyboard, then put them on the page, `data-vo="…"` on the
+  element they go with (said when it enters) or `window.VOICE = [{ at, text }]`. Voices: Piper, free and offline
+  (`node <skill>/scripts/voice-setup.mjs` once; `<body data-voice="piper:fr_FR-siwis-medium">`, a woman, or
+  `piper:fr_FR-upmc-medium#pierre`, a man), Google Cloud Text-to-Speech (`google:fr-FR-Neural2-A`, with the
+  person's own `GOOGLE_TTS_API_KEY`), or the person's recorded voice (`{ at, file: 'assets/voice/01.m4a' }`),
+  often the most convincing for a local audience. `data-voice-rate="1.1"` speeds it up. `check` times every line:
+  no line may run into the next or past the end. The music ducks under the voice by itself. Credit a Piper
+  voice where its licence asks (siwis CC BY 4.0, upmc CC BY-SA 4.0), in the post's caption.
 - **Music** is the person's: a track they own or license for ads on social media (a royalty-free library whose
   licence covers it). Never a commercial song. Ask for it when the film runs over about 15 s and tells
   something; otherwise effects alone are enough.
