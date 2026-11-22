@@ -1,5 +1,5 @@
 <!doctype html>
-<!-- TEMPLATE website-launch · 15 s · landscape / story / square
+<!-- TEMPLATE website-launch · 15 s · landscape / story / feed / square
      Beats: 0-2.8 statement · 2.8-4.6 browser arrives, URL types, page loads · 4.6-10.2 the page scrolls, three chips name
             what it offers, the cursor presses the main button · 9.35-12.2 the next scene opens in a circle from that
             button (iris) onto the same site on a phone · 12.2-15 endcard with the URL.
@@ -16,6 +16,7 @@
   .br-wrap { position: absolute; left: 80px; right: 80px; top: 520px; height: 1180px; }
   body.landscape .br-wrap { left: 300px; right: 300px; top: 150px; height: 860px; }
   body.square .br-wrap { left: 70px; right: 70px; top: 230px; height: 780px; }
+  body.feed .br-wrap { left: 70px; right: 70px; top: 260px; height: 1000px; }
   .br-wrap .browser { inset: 0; }
 
   /* stand-in site (replace with a capture) */
@@ -36,12 +37,12 @@
   @keyframes scrollPage { 0%, 12% { transform: translateY(0) } 55%, 70% { transform: translateY(-38%) } 100% { transform: translateY(-8%) } }
 
   .ph-wrap { position: absolute; left: 50%; top: 520px; width: 420px; height: 870px; margin-left: -210px; }
-  body.landscape .ph-wrap { top: 120px; } body.square .ph-wrap { top: 160px; transform: scale(.85); transform-origin: 50% 0; }
+  body.landscape .ph-wrap { top: 120px; } body.feed .ph-wrap { top: 260px; transform: scale(.85); transform-origin: 50% 0; } body.square .ph-wrap { top: 160px; transform: scale(.85); transform-origin: 50% 0; }
   .ph-wrap .phone { left: 0; top: 0; }
   .site.mobile h1 { font-size: 52px; } .site.mobile .hero { padding: 120px 28px 20px; } .site.mobile .img { margin: 20px 28px; height: 260px; } .site.mobile nav { padding: 70px 28px 0; position: absolute; }
 </style>
 </head>
-<body data-duration="15" data-formats="landscape,story,square">
+<body data-sfx="auto" data-duration="15" data-formats="landscape,story,feed,square">
   <div class="bg-dots"></div>
   <div class="bg-glow" style="width:900px;height:900px;left:-300px;top:-300px" data-loop="drift/10"></div>
 
@@ -57,7 +58,7 @@
   <style>body.landscape .top { top: 70px !important } body.landscape .top .h2, body.landscape .top .h1 { font-size: 64px } body.square .top { top: 80px !important }</style>
 
   <!-- 3. Browser -->
-  <div class="br-wrap">
+  <div class="br-wrap" data-show="0,10">
     <div class="browser" data-in="fadeUp@2.8/.9">
       <div class="bar"><span class="lights"><i></i><i></i><i></i></span><span class="url"><span data-type="3.5,12">northwind.studio</span></span></div>
       <div class="progress" data-in="grow@4.6/.5" style="opacity:1"></div>
@@ -83,7 +84,7 @@
   ];</script>
 
   <!-- 4. Same site on a phone: the scene opens in a circle from the pressed button -->
-  <div class="flood" style="background:var(--bg);z-index:6" data-show="9.3,12.2" data-in="iris@9.35/.5" data-from="#go">
+  <div class="flood" style="background:var(--bg);z-index:6" data-show="9.3" data-in="iris@9.35/.5" data-out="fadeOut@12.2/.3" data-from="#go">
   <div class="bg-dots"></div>
   <div class="top center"><div class="h2" data-in="fadeUp@9.9">And on your phone</div></div>
   <div class="ph-wrap stage3d">
@@ -102,7 +103,7 @@
 <script src="engine/motion.js"></script>
 <script>
   document.querySelectorAll('.cursor > span').forEach((c) => c.innerHTML = icon('cursor'));
-  const dy = { landscape: -420, story: 0, square: -380 }[FORMAT];
+  const dy = { landscape: -420, story: 0, feed: -300, square: -380 }[FORMAT];
   chips(CHIPS.map((c) => ({ ...c, top: c.top + dy, inset: { landscape: 90, square: 40 }[FORMAT] })));   // story: the helper keeps right-hand chips clear of the platform's buttons
   endcard({ at: 12.2, name: 'Northwind', tagline: 'Interiors for small spaces', cta: 'northwind.studio' });
 </script>

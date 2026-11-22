@@ -40,6 +40,10 @@ be captured, from the app's own code and colours. Ask at most three short questi
 | `square` | 1080×1080 (1:1) | feeds, marketplaces, X |
 | `landscape` | 1920×1080 (16:9) | YouTube, website hero, presentations, LinkedIn desktop |
 
+The three templates lay out all four formats (landscape puts the text beside the device). Declare the ones the
+person needs in `<body data-formats>`, and `check` every one: a layout that works in story often overflows in
+feed or landscape.
+
 ### 2. Storyboard before code
 
 Write `storyboard.md` in the project folder: a table of beats with start time, what is on screen, the words, and
@@ -119,15 +123,27 @@ step is where most of the quality comes from; do not skip it to save time. Never
 `data-check` to make it pass: only real UI inside a device (`ui`), small print (`note`) or a designed overlap
 (`overlap`) gets one.
 
-### 7. Render and deliver
+### 7. Sound, render and deliver
 
 ```bash
-node engine/render.mjs video.html                     # MP4 per format in renders/ (H.264, 30 fps)
-node engine/render.mjs video.html --audio music.mp3   # optional: a licensed track, faded out at the end
+node engine/render.mjs video.html                     # MP4 per format in renders/ (H.264, 30 fps), with its effects
+node engine/render.mjs video.html --audio music.mp3   # music under the effects, faded in and out (--music-volume 0.55)
+node engine/render.mjs video.html --sfx off           # silent
 ```
 
+- **Effects on what is seen.** `<body data-sfx="auto">` (the templates have it) puts a sound on each visible
+  action: a whoosh when the phone grows or the scene irises open, a click on a press, a pop, a tap as a chip
+  lands, a swoosh on a camera move, a chime on the end card. `data-sfx="none"` mutes one element,
+  `data-sfx="thud@4.2:0.8"` sets one (effects: `whoosh swoosh pop click tap chime thud riser`, or a file in the
+  project). They are synthesised by the engine, so they carry no licence. Sound only what moves on screen; a
+  film where everything clicks sounds cheap.
+- **Music** is the person's: a track they own or license for ads on social media (a royalty-free library whose
+  licence covers it). Never a commercial song. Ask for it when the film runs over about 15 s and tells
+  something; otherwise effects alone are enough.
+- Videos autoplay muted in feeds: every message must still work without sound.
+
 Report the files with their format and length, what each is for, and what the user should replace (sample
-screens, stand-in numbers). Videos autoplay muted in feeds: every message must work without sound.
+screens, stand-in numbers, the music).
 
 ## Honesty in ads
 
@@ -138,8 +154,8 @@ product as if it were the client's.
 
 ## Files
 
-- `engine/` — `motion.css` (components, keyframes), `motion.js` (timing engine, helpers), `check.mjs` (quality
-  check), `render.mjs` (renderer), `page.mjs` (shared by both)
+- `engine/` — `motion.css` (components, keyframes), `motion.js` (timing engine, helpers, sound cues), `check.mjs`
+  (quality check), `render.mjs` (renderer), `sound.mjs` (effects and mix), `page.mjs` (shared)
 - `styles/` — six presets; `references/styles.md` says when to use which and how to brand one
 - `templates/` — `app-promo` (15 s), `website-launch` (14 s), `social-ad` (10 s); each is a working video
 - `references/moves.md` — the motion patterns with markup · `references/storyboard.md` — structure and timing ·

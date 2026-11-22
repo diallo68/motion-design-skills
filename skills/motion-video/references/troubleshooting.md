@@ -8,6 +8,8 @@
 | `check` flags app text inside a phone | it is not inside `.phone`/`.browser`: add `data-check="ui"` to its container |
 | `capture-app` sees no device | start the emulator or simulator first; `--list` shows what `adb` and `simctl` see |
 | A capture sits under the phone's notch | put `<div class="statusbar">` before the `<img class="shot">`, or capture with `--keep-status` |
+| The render has no sound | the page needs `<body data-sfx="auto">`, `data-sfx` on elements or `--audio`; check `--sfx off` is not set |
+| An effect is too loud or doubled | set `data-sfx="none"` on that element, or `data-sfx="tap@t:0.2"` for a quieter one |
 | `Playwright is missing` | run `npm install && npx playwright install chromium` in the project folder |
 | `ffmpeg is not on the PATH` | install ffmpeg (macOS `brew install ffmpeg`, Ubuntu `sudo apt install ffmpeg`, Windows `winget install ffmpeg`) |
 | Fallback font in the frames | the Google Fonts `@import` needs network at render time; or ship `.woff2` files with `@font-face` |

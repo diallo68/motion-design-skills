@@ -23,6 +23,8 @@
 - **End card 2.8–3 s**: name, one line, one action (URL, "Download", store badges); the last line holds 2 s.
 
 ## Template
+Add a Sound column when the film has music or a sound that matters (the auto effects need no planning).
+
 | Time | On screen | Words | Move |
 |---|---|---|---|
 | 0.0–2.5 | the problem, big type | "Still splitting bills by hand?" | words one by one |

@@ -65,6 +65,10 @@ Open `video.html?format=feed&t=4` in a browser to look at any moment while you e
 - **Helpers**: `capture-app.mjs` captures the real app from an Android emulator or device or an iOS simulator,
   with the system bars cropped off; `capture.mjs` captures a live site for the browser frame.
 
+- **Sound**: effects synthesised by the engine and placed on the visible actions (whoosh, click, pop, tap,
+  chime…), music of your own mixed under them.
+- **4 formats from one page**: story, feed, square and landscape, each template laid out and checked in all four.
+
 Every frame is computed from time `t`, so renders are identical every time, at any frame rate, with no screen
 recording.
 

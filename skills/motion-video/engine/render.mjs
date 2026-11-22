@@ -7,6 +7,8 @@
 //   node render.mjs video.html --still 3.5           one PNG at 3.5 s (check a moment)
 //   node render.mjs video.html --sheet               contact sheet: one frame every second, in one JPG
 //   node render.mjs video.html --fps 60 --audio music.mp3 --out renders
+//   node render.mjs video.html --sfx off             no sound effects (they play when <body data-sfx="auto">
+//                                                    or elements carry data-sfx); --music-volume 0.55
 //
 // Run `node check.mjs video.html` first: it finds what a contact sheet hides.
 // Needs Node 18+, `npm i playwright` (then `npx playwright install chromium`) and ffmpeg on the PATH.
@@ -14,6 +16,7 @@ import { spawn, spawnSync } from 'node:child_process';
 import { mkdir, rm } from 'node:fs/promises';
 import { join, resolve } from 'node:path';
 import { SIZES, options, loadPlaywright, serve, openFormat, pickFormats } from './page.mjs';
+import { ensureSfx, mix } from './sound.mjs';
 
 const args = process.argv.slice(2);
 const opt = options(args);
@@ -58,9 +61,16 @@ for (const format of formats) {
   } else {
     if (!hasFfmpeg) { console.error('ffmpeg is not on the PATH (macOS: brew install ffmpeg · Debian/Ubuntu: sudo apt install ffmpeg · Windows: winget install ffmpeg)'); process.exit(1); }
     const frames = Math.round(duration * fps); const f = join(out, `${tag}.mp4`);
-    const audio = opt('audio');
+    const music = opt('audio'); const cues = opt('sfx') === 'off' ? [] : await page.evaluate(() => window.soundCues ? window.soundCues() : []);
     const ffArgs = ['-y', '-loglevel', 'error', '-f', 'image2pipe', '-framerate', String(fps), '-i', '-'];
-    if (audio && audio !== true) ffArgs.push('-i', resolve(audio), '-shortest', '-c:a', 'aac', '-b:a', '192k', '-af', `afade=t=out:st=${Math.max(0, duration - 1)}:d=1`);
+    let wav = null;
+    if (cues.length || (music && music !== true)) {
+      if (cues.length) ensureSfx();
+      wav = join(out, `.${tag}-sound.wav`);
+      mix({ cues, root: site.root, duration, out: wav, music: music && music !== true ? resolve(music) : null, musicVolume: +opt('music-volume', 0.55) });
+      ffArgs.push('-i', wav, '-c:a', 'aac', '-b:a', '192k', '-shortest');
+      console.log(`sound: ${cues.length} effect${cues.length === 1 ? '' : 's'}${music && music !== true ? ' + music' : ''}`);
+    }
     ffArgs.push('-c:v', 'libx264', '-preset', 'slow', '-crf', '18', '-pix_fmt', 'yuv420p', '-movflags', '+faststart', f);
     const ff = spawn('ffmpeg', ffArgs, { stdio: ['pipe', 'inherit', 'inherit'] });
     for (let i = 0; i < frames; i++) {
@@ -70,6 +80,7 @@ for (const format of formats) {
       if (i % fps === 0) process.stdout.write(`\r${tag}: ${Math.round((i / frames) * 100)}%   `);
     }
     ff.stdin.end(); await new Promise((r) => ff.on('close', r));
+    if (wav) await rm(wav, { force: true });
     console.log(`\rvideo ${f} (${duration}s, ${fps} fps)`);
   }
   await page.close();

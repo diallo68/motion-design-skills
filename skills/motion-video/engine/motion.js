@@ -16,6 +16,8 @@
 //   data-cam="2/.6 1.8 0 -240; 4/.5 1 0 0"  camera on a wrapper: at/duration scale x y [ease], states in order
 //   data-become="9.9/.6"          the element grows past the frame (its fill becomes the next scene)
 //   data-from="#button"           a .flood or iris starts from the centre of that element (at its data-in time)
+//   <body data-sfx="auto">        sound effects on the visible actions (render.mjs mixes them); data-sfx="pop" on an
+//                                 element sets its sound (at its entrance), "pop@3.2:0.6" a time and gain, "none" mutes it
 // URL parameters: ?format=story|feed|square|landscape  &t=3.5 (preview a frame in a browser)
 
 (() => {
@@ -213,6 +215,49 @@
       el.style.width = `${ws[a0] + (ws[a1] - ws[a0]) * fr}px`;
     });
     if (window.onSeek) window.onSeek(t);
+  };
+
+  // ---------- sound cues (read by render.mjs) ----------
+  // Each visible action gets the sound of its kind; explicit data-sfx wins; window.SFX = [{ at, sfx, gain }] adds more.
+  const AUTO = { iris: ['whoosh', .55], press: ['click', .7], pop: ['pop', .5], slideL: ['tap', .3], slideR: ['tap', .3],
+    phoneIn: ['swoosh', .45], tiltIn: ['swoosh', .45], flyIn: ['swoosh', .3], zoomIn: ['swoosh', .35], whipInL: null, whipInR: null, whipInUp: null };
+  const AUTO_OUT = { whipOutL: ['whoosh', .7], whipOutR: ['whoosh', .7], whipOutUp: ['whoosh', .7] };
+  window.soundCues = () => {
+    compile();
+    const cues = [...(window.SFX || [])];
+    const auto = document.body.dataset.sfx === 'auto';
+    for (const el of document.querySelectorAll('[data-sfx]')) {
+      if (el === document.body || el.dataset.sfx === 'none') continue;
+      const [sfx, rest] = el.dataset.sfx.split('@');
+      let at = el.dataset.become ? parse(`x@${el.dataset.become}`, 0).at : el.dataset.in ? parse(el.dataset.in, 0).at
+        : el.dataset.tap ? +el.dataset.tap : el.dataset.show ? +el.dataset.show.split(',')[0] : 0;
+      let gain = 1;
+      if (rest) { const [a, g] = rest.split(':'); if (a) at = +a; if (g) gain = +g; }
+      cues.push({ at, sfx, gain });
+    }
+    if (auto) {
+      const free = (el) => !el.dataset.sfx;
+      document.querySelectorAll('[data-become]').forEach((el) => free(el) && cues.push({ at: parse(`x@${el.dataset.become}`, 0).at, sfx: 'whoosh', gain: .9 }));
+      document.querySelectorAll('[data-in]').forEach((el) => {
+        if (!free(el) || el.classList.contains('w') || el.closest('.endcard')) return;
+        const a = parse(el.dataset.in, 0); const s = AUTO[a.name]; if (s) cues.push({ at: a.at, sfx: s[0], gain: s[1] });
+      });
+      document.querySelectorAll('[data-out]').forEach((el) => {
+        if (!free(el)) return; const a = parse(el.dataset.out, 0); const s = AUTO_OUT[a.name]; if (s) cues.push({ at: a.at, sfx: s[0], gain: s[1] });
+      });
+      document.querySelectorAll('[data-cam]').forEach((el) => {
+        if (!free(el)) return; let prev = 1;
+        el.dataset.cam.split(';').map((x) => x.trim()).filter(Boolean).forEach((seg) => {
+          const [time, s] = seg.split(/\s+/); const at = +time.split('/')[0];
+          if (Math.abs(+s - prev) >= 0.2) cues.push({ at, sfx: 'swoosh', gain: .35 }); prev = +s;
+        });
+      });
+      const end = document.querySelector('.endcard');
+      if (end && free(end)) cues.push({ at: parse(end.dataset.in || 'x@0', 0).at + 0.3, sfx: 'chime', gain: .45 });
+    }
+    // one sound at a time per kind: drop repeats closer than 0.15 s
+    cues.sort((a, b) => a.at - b.at);
+    return cues.filter((c, i) => c.at < window.DURATION && !cues.slice(0, i).some((p) => p.sfx === c.sfx && c.at - p.at < 0.15));
   };
 
   window.addEventListener('load', () => seek(+(params.get('t') || 0)));

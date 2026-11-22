@@ -56,6 +56,14 @@ transitions `cam flood dip`.
 --display-weight --tracking --radius --shadow --screen-bg --screen-ink --end-bg --end-ink --end-btn --end-btn-ink
 --pad --ease --ease-pop --ease-io --ease-arrive --ease-move --ease-leave`.
 
+## Sound
+`<body data-sfx="auto">` gives each visible action its effect (become and iris: whoosh; press: click; pop: pop;
+chips sliding in: tap; phone, fly and zoom entrances, camera moves: swoosh; whip out: whoosh; end card: chime).
+`data-sfx` on an element: `none`, `pop` (at its entrance or become time), `pop@3.2:0.6` (time and gain), or a file
+path. `window.SFX = [{ at, sfx, gain }]` adds cues by script. Effects are synthesised by `sound.mjs` into
+`engine/.sfx/` on first render, each peaking at -3 dB. `render.mjs --audio track.mp3 --music-volume 0.55` lays
+music under them; `--sfx off` renders silent.
+
 ## Check (`node engine/check.mjs video.html`)
 Rules, each reported with a time range, the element and a fix: `safe-zone` (story: text inside x 60–960, y 270–1250,
 clear of the Reels/TikTok/Shorts buttons and caption; other formats: a 5 % margin), `off-frame`, `cut-off`,
