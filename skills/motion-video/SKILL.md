@@ -29,8 +29,9 @@ Collect, from the conversation, the repository or the live site first:
   numbers (users, ratings, prices) and whether the app is already in the stores.
 - **Language** of the on-screen text (match the audience, not this file).
 
-If the user's own codebase holds the app, read its screens and colours: a video built from the real UI beats
-invented screens. Ask at most three short questions, and only about things that change the video.
+**Real screens first.** If the app runs in an emulator, device or simulator, capture its real screens (step 5)
+instead of redrawing them: a video built from the real UI beats invented screens. Redraw in HTML only what cannot
+be captured, from the app's own code and colours. Ask at most three short questions, and only about things that change the video.
 
 | Format | Size | Where |
 |---|---|---|
@@ -52,6 +53,11 @@ and structure (hook in the first 1.5 s, one idea per beat, 6–8 words of on-scr
 - **Moves**: pick 3 to 5 from `references/moves.md` (the catalogue of Dribbble/Pinterest patterns with the exact
   markup for each). A video that uses every move looks like a template demo; one strong move per beat reads as
   designed.
+- **Transitions with a cause**: join the beats through something on screen, 2 to 4 kinds per film (moves 19–25):
+  a punch-in on the part of the screen the line names, the phone growing into the next scene, the next scene
+  opening from the button pressed, a whip between two lines. Write each one in the storyboard's Move column.
+- **Timing**: eases by role, exits half the entrance, a landed line holds still, entrances varied (moves.md,
+  Timing). Floating loops and tap rings are options, not defaults: show the UI acting and the press answering.
 
 ### 4. Start the project
 
@@ -82,8 +88,19 @@ full API; the essentials:
 - Position with a wrapper, animate the element inside it: an entrance animation owns `transform`, so a
   `translate(-50%)` on the same element would be lost.
 - Give each format its layout with `body.feed …`, `body.square …`, `body.landscape …` rules; check them all.
-- App screens: real screenshots (`<img class="shot">`) or HTML rebuilt from the real UI. Capture a live site with
-  `node <skill>/scripts/capture.mjs <url> --out assets/site.png` (stop above sections showing real people).
+- App screens: capture the running app, one screen per beat, after navigating to it (or asking the person to):
+
+  ```bash
+  node <skill>/scripts/capture-app.mjs home          # → assets/screens/home.png, Android (adb) or iOS simulator
+  node <skill>/scripts/capture-app.mjs quiz --keep-status   # keep the status bar (iOS: cleaned to 9:41)
+  ```
+
+  It crops the status and navigation bars at their exact size. Inside a `.phone`, put the engine's clean
+  `<div class="statusbar">` above `<img class="shot" src="assets/screens/home.png">`, and set `--screen-bg` and
+  `--screen-ink` on the `.screen` to the colours at the top of the capture so the bar blends in; on a flat screen
+  card, use the capture alone. Use a demo account, and look at every capture before using it: no real person's name, face,
+  message or number. Capture a live site with `node <skill>/scripts/capture.mjs <url> --out assets/site.png` (stop
+  above sections showing real people).
 
 ### 6. Check, then look, before you render
 
@@ -127,4 +144,5 @@ product as if it were the client's.
 - `templates/` — `app-promo` (15 s), `website-launch` (14 s), `social-ad` (10 s); each is a working video
 - `references/moves.md` — the motion patterns with markup · `references/storyboard.md` — structure and timing ·
   `references/engine.md` — every attribute, helper and keyframe · `references/troubleshooting.md`
-- `scripts/init.mjs` — new project · `scripts/capture.mjs` — capture a live web page
+- `scripts/init.mjs` — new project · `scripts/capture-app.mjs` — capture the running app (Android, iOS simulator)
+  · `scripts/capture.mjs` — capture a live web page

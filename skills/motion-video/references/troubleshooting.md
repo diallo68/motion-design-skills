@@ -6,6 +6,8 @@
 | `check` reports `read-time` | hold the line longer or cut words; a split line counts from when most words are in |
 | `check` reports `covered` | something opaque is drawn on top (a later element, a card): raise the text's `z-index` or retime |
 | `check` flags app text inside a phone | it is not inside `.phone`/`.browser`: add `data-check="ui"` to its container |
+| `capture-app` sees no device | start the emulator or simulator first; `--list` shows what `adb` and `simctl` see |
+| A capture sits under the phone's notch | put `<div class="statusbar">` before the `<img class="shot">`, or capture with `--keep-status` |
 | `Playwright is missing` | run `npm install && npx playwright install chromium` in the project folder |
 | `ffmpeg is not on the PATH` | install ffmpeg (macOS `brew install ffmpeg`, Ubuntu `sudo apt install ffmpeg`, Windows `winget install ffmpeg`) |
 | Fallback font in the frames | the Google Fonts `@import` needs network at render time; or ship `.woff2` files with `@font-face` |

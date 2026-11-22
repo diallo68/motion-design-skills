@@ -8,7 +8,8 @@
 //   node check.mjs video.html --step 0.05        finer sampling (default 0.1 s)
 //
 // Exit code 1 when there is at least one error. Rules: safe-zone, off-frame, cut-off, overlap, covered,
-// read-time, last-line, end-card, small-text, contrast, crowded, never-shown, load.
+// read-time, last-line, end-card, small-text, contrast, crowded, never-shown, load; motion warnings moving-text,
+// same-entrance, tap-ring.
 // Opt-outs on any element: data-check="ignore" (never checked), "ui" (app or site UI inside a device: not read),
 // "note" (small print such as the disclaimer: no read-time, safe-zone or contrast rule), "overlap" (meant to overlap).
 import { options, loadPlaywright, serve, openFormat, pickFormats, SIZES } from './page.mjs';
@@ -165,9 +166,17 @@ function install() {
       const at = el.dataset.in ? +el.dataset.in.split('@')[1]?.split('/')[0] : el.dataset.show ? +el.dataset.show.split(',')[0] : +el.dataset.words.split(',')[0];
       if (at >= D) late.push({ sel: el.id ? `#${el.id}` : `${el.tagName.toLowerCase()}${el.classList[0] ? '.' + el.classList[0] : ''}`, at, text: el.textContent.trim().slice(0, 40) });
     }
+    // motion craft: titles that keep moving, one entrance everywhere, tap rings
+    const textOf = (el) => !el.closest('.phone,.browser,[data-check~="ui"],[data-check~="ignore"]') && el.textContent.trim();
+    const loops = [...document.querySelectorAll('[data-loop]')].filter(textOf).map((el) => ({ sel: el.id ? `#${el.id}` : `${el.tagName.toLowerCase()}${el.classList[0] ? '.' + el.classList[0] : ''}`, text: el.textContent.trim().slice(0, 40), loop: el.dataset.loop }));
+    const entrances = [...document.querySelectorAll('[data-in]')].filter((el) => !el.classList.contains('w') && textOf(el) && !el.closest('.endcard')).map((el) => el.dataset.in.split('@')[0]);
+    const counts = entrances.reduce((m, n) => ((m[n] = (m[n] || 0) + 1), m), {});
+    const top = Object.entries(counts).sort((a, b) => b[1] - a[1])[0];
+    const sameEntrance = entrances.length >= 5 && top && top[1] / entrances.length >= 0.7 ? { name: top[0], n: top[1], of: entrances.length } : null;
+    const taps = document.querySelectorAll('[data-tap]').length;
     const end = document.querySelector('.endcard');
     const endAt = end?.dataset.in ? +end.dataset.in.split('@')[1].split('/')[0] : null;
-    return { duration: D, hasDuration: !!document.body.dataset.duration, late, endAt };
+    return { duration: D, hasDuration: !!document.body.dataset.duration, late, endAt, loops, sameEntrance, taps };
   };
 }
 
@@ -200,6 +209,9 @@ for (const format of formats) {
   for (const e of [...new Set(errors)]) add('error', 'load', null, null, null, e, 'Keep every asset in the project folder and check its path and name (case counts).');
   if (!stat.hasDuration) add('warning', 'duration', null, null, null, 'No data-duration on <body>: the video is 12 s by default.', 'Set <body data-duration="…">.');
   for (const l of stat.late) add('warning', 'never-shown', { sel: l.sel, text: l.text }, l.at, null, `Starts at ${fmtT(l.at)}, after the video ends (${fmtT(D)}).`, 'Move it earlier or raise data-duration.');
+  for (const l of stat.loops) add('warning', 'moving-text', l, null, null, `Text on a ${l.loop} loop keeps moving after it lands.`, 'A landed line holds still; move the camera, the device or the ground instead (data-loop on a wrapper without text).');
+  if (stat.sameEntrance) add('warning', 'same-entrance', null, null, null, `${stat.sameEntrance.n} of ${stat.sameEntrance.of} texts enter with ${stat.sameEntrance.name}.`, 'Vary entrances within a film: words one by one, a blur-in, a mask, a whip; see references/moves.md.');
+  if (stat.taps) add('warning', 'tap-ring', null, null, null, `${stat.taps} tap ring${stat.taps > 1 ? 's' : ''}: rings read as a template.`, 'Show the tap by what it does: press the button (press keyframe) and let the screen answer, or cut on the tap.');
   if (stat.endAt !== null && D - stat.endAt < 2.5) add('warning', 'end-card', { sel: '.endcard' }, stat.endAt, D, `The end card is on screen for ${(D - stat.endAt).toFixed(1)} s.`, 'Give the end card 2.5–3 s: start it earlier or raise data-duration.');
 
   // sample the whole video
