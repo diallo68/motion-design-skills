@@ -60,7 +60,8 @@ Open `video.html?format=feed&t=4` in a browser to look at any moment while you e
 - **A quality check** (`check.mjs`) that plays the video and measures every line of text every 0.1 s in every
   format: platform safe zones (Reels, TikTok, Shorts), text off the frame, cut, overlapping or covered, time to
   read, contrast, letter size, crowding, end-card length, missing files.
-- **Helpers**: `capture.mjs` to capture a live site for the browser frame.
+- **Helpers**: `capture-app.mjs` captures the real app from an Android emulator or device or an iOS simulator,
+  with the system bars cropped off; `capture.mjs` captures a live site for the browser frame.
 
 Every frame is computed from time `t`, so renders are identical every time, at any frame rate, with no screen
 recording.
