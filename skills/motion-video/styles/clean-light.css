@@ -1,0 +1,5 @@
+/* Clean light — white and soft grey, floating UI cards with soft shadows, calm motion. SaaS, productivity, finance, B2B. */
+@import url("https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap");
+:root { --bg: #f5f6f8; --bg2: #e9ecf2; --ink: #101828; --muted: #667085; --accent: #2563eb; --accent-ink: #fff; --accent2: #14b8a6;
+  --card: #ffffff; --card-ink: #101828; --line: rgba(16,24,40,.08); --font: "Plus Jakarta Sans", system-ui, sans-serif; --display-weight: 700;
+  --shadow: 0 30px 80px rgba(16,24,40,.12); --screen-bg: #fff; --screen-ink: #101828; --end-bg: #ffffff; }

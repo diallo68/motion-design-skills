@@ -1,0 +1,6 @@
+/* Bold type — black and white with one loud colour, huge kinetic typography carries the message. Launch teasers, "Introducing…" */
+@import url("https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..900&display=swap");
+:root { --bg: #0c0c0c; --bg2: #1c1c1c; --ink: #fafafa; --muted: #a0a0a0; --accent: #ff4d2e; --accent-ink: #0c0c0c; --accent2: #ffd12e;
+  --card: #1a1a1a; --card-ink: #fafafa; --line: rgba(255,255,255,.12); --font: "Archivo", system-ui, sans-serif; --font-display: "Archivo", sans-serif;
+  --display-weight: 900; --tracking: -0.045em; --radius: 18px; --screen-bg: #fff; --screen-ink: #111; --end-bg: #ff4d2e; --end-btn: #0c0c0c; --end-btn-ink: #fafafa; --end-ink: #0c0c0c; }
+.display, .h1, .h2, .endcard .name { font-stretch: 75%; text-transform: uppercase; }

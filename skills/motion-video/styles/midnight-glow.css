@@ -1,0 +1,5 @@
+/* Midnight glow — dark navy ground, one luminous accent, glowing orbs. Premium tech / AI / fintech launches. */
+@import url("https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;700;800&display=swap");
+:root { --bg: #070a14; --bg2: #121a33; --ink: #f2f5ff; --muted: #8d97b5; --accent: #7c8cff; --accent-ink: #070a14; --accent2: #3ee0ff;
+  --card: #121a2e; --card-ink: #f2f5ff; --line: rgba(160,180,255,.14); --font: "Inter Tight", system-ui, sans-serif; --display-weight: 700;
+  --screen-bg: #0e1424; --screen-ink: #f2f5ff; --end-bg: #070a14; }

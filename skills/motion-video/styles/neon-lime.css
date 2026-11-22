@@ -1,0 +1,5 @@
+/* Neon lime — deep green-black with an acid lime accent, bold tiles. Fitness, gaming, Gen-Z, AI tools. */
+@import url("https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap");
+:root { --bg: #0f1410; --bg2: #18211a; --ink: #eef6e8; --muted: #93a38e; --accent: #c6f432; --accent-ink: #0f1410; --accent2: #6df2a4;
+  --card: #1b241c; --card-ink: #eef6e8; --line: rgba(198,244,50,.14); --font: "Space Grotesk", system-ui, sans-serif; --display-weight: 700;
+  --radius: 30px; --screen-bg: #121812; --screen-ink: #eef6e8; --end-bg: #c6f432; --end-btn: #0f1410; --end-btn-ink: #c6f432; --end-ink: #0f1410; }

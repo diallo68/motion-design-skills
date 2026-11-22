@@ -1,0 +1,19 @@
+{
+  "name": "motion-design-skills",
+  "description": "Motion design videos (app promos, website launches, social ads) rendered to MP4 from HTML/CSS.",
+  "owner": { "name": "diallo68" },
+  "plugins": [
+    {
+      "name": "motion-design-skills",
+      "description": "Make app promo, website launch and social ad videos with the motion patterns seen on Dribbble and Pinterest: kinetic type, 3D phones, UI cards, chips, cursor taps, tickers, counters and end cards, rendered frame by frame to MP4 in story, feed, square and landscape formats.",
+      "version": "1.0.0",
+      "source": "./",
+      "skills": ["./skills/motion-video"],
+      "author": { "name": "diallo68" },
+      "homepage": "https://github.com/diallo68/motion-design-skills",
+      "repository": "https://github.com/diallo68/motion-design-skills",
+      "license": "MIT",
+      "keywords": ["skills", "motion-design", "video", "animation", "app-promo", "social-media", "marketing"]
+    }
+  ]
+}

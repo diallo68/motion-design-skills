@@ -1,0 +1,123 @@
+<!doctype html>
+<!-- TEMPLATE app-promo · 15 s · story / feed / square
+     Beats: 0-2.4 kinetic intro · 2.4-4.4 phone arrives tilted · 4.4-10.4 three features inside the phone with chips
+            · 10.4-12.6 ticker line over a fan of screens · 12.6-15 endcard.
+     Replace every name, screen and text with the client's. Screens are plain HTML here; swap a .screen's content for
+     <img class="shot" src="assets/screen-1.png"> when the client gives screenshots. -->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>App promo</title>
+<link rel="stylesheet" href="engine/motion.css">
+<link rel="stylesheet" href="style.css">
+<style>
+  /* the phone sits in a wrapper so the wrapper places and scales it, while the phone itself animates */
+  .ph-wrap { position: absolute; left: 50%; top: 600px; width: 560px; height: 1160px; margin-left: -280px; transform-origin: 50% 0; }
+  body.feed .ph-wrap { top: 330px; transform: scale(.8); }
+  body.square .ph-wrap { top: 250px; transform: scale(.66); }
+  .ph-wrap .phone { left: 0; top: 0; }
+  .glow1 { width: 900px; height: 900px; left: 90px; top: 700px; }
+
+  /* app screens (HTML stand-ins) */
+  .app { padding: 0 44px; font-family: var(--font); }
+  .app h4 { font: 800 54px/1.05 var(--font); letter-spacing: -.03em; margin: 20px 0 8px; }
+  .app p { font: 500 26px var(--font); opacity: .6; }
+  .habit { display: flex; align-items: center; gap: 22px; padding: 26px; border-radius: 30px; background: rgba(127,127,127,.1); margin-top: 18px; font: 700 30px var(--font); }
+  .habit .dot { width: 62px; height: 62px; border-radius: 20px; display: grid; place-items: center; font-size: 34px; }
+  .habit .box { margin-left: auto; width: 54px; height: 54px; border-radius: 16px; border: 4px solid rgba(127,127,127,.4); display: grid; place-items: center; color: var(--accent-ink); }
+  .habit .box.on { background: var(--accent); border-color: var(--accent); }
+  .habit .box svg { width: 34px; height: 34px; }
+  .streak { margin-top: 28px; padding: 34px; border-radius: 34px; background: var(--accent); color: var(--accent-ink); }
+  .streak b { font: 800 110px/1 var(--font); letter-spacing: -.04em; display: block; }
+  .bars { display: flex; align-items: flex-end; gap: 16px; height: 300px; margin-top: 30px; }
+  .bars i { flex: 1; border-radius: 14px 14px 6px 6px; background: var(--accent); transform-origin: bottom; }
+  .bars i:nth-child(odd) { background: var(--accent2); }
+  .remind { margin-top: 26px; padding: 26px; border-radius: 28px; background: #fff; color: #111; box-shadow: 0 20px 40px rgba(0,0,0,.18); display: flex; gap: 18px; align-items: center; font: 600 28px/1.3 var(--font); }
+  .remind .ico { width: 64px; height: 64px; border-radius: 18px; background: var(--accent); color: var(--accent-ink); display: grid; place-items: center; flex: none; }
+  .remind .ico svg { width: 36px; height: 36px; }
+
+  .fan { position: absolute; left: 50%; top: 760px; width: 0; height: 0; }
+  body.feed .fan { top: 520px; } body.square .fan { top: 400px; transform: scale(.75); }
+  .fan .phone { left: -210px; top: 0; }
+</style>
+</head>
+<body data-duration="15" data-formats="story,feed,square" class="grain">
+  <div class="bg-mesh" data-loop="drift/9"></div>
+  <div class="bg-grid"></div>
+
+  <!-- 1. Kinetic intro -->
+  <div class="mid center" data-out="outBlur@2.3/.4">
+    <div class="label" data-in="fadeIn@.1">Introducing</div>
+    <div class="display" style="font-size:190px;margin-top:20px" data-in="blurIn@.45/1">Tempo</div>
+  </div>
+
+  <!-- 2. Headline that stays while the phone plays -->
+  <div class="top center" data-show="2.4,10.4">
+    <div class="h1" data-words="2.5,.09">Build habits <span class="accent">that stick</span></div>
+  </div>
+
+  <div class="bg-glow glow1" data-in="fadeIn@2.4/1" data-loop="pulse/5" data-out="fadeOut@10.2"></div>
+
+  <!-- 3. The phone: one device, its screen changes with data-show -->
+  <div class="ph-wrap stage3d" data-out="outDown@10.1/.5">
+    <div class="phone" data-in="phoneIn@2.5/1.2">
+      <div class="screen">
+        <div class="statusbar"><span>9:41</span><span>●●● ▮</span></div>
+        <!-- screen A: today's habits, one gets ticked -->
+        <div class="app" data-show="0,6.4">
+          <p>Tuesday</p><h4>Today</h4>
+          <div class="habit"><span class="dot" style="background:#ffe3c2">☀️</span>Morning walk<span class="box on">CHECK</span></div>
+          <div class="habit"><span class="dot" style="background:#d7f5e6">💧</span>Drink 2 L water<span class="box on">CHECK</span></div>
+          <div class="habit"><span class="dot" style="background:#e3e0ff">📖</span>Read 20 pages<span class="box" style="position:relative"><span class="box on" style="position:absolute;inset:-4px;margin:0" data-in="pop@5.3/.4">CHECK</span></span></div>
+          <div class="habit"><span class="dot" style="background:#ffd9e4">🧘</span>Stretch 10 min<span class="box"></span></div>
+        </div>
+        <!-- screen B: streak and weekly chart -->
+        <div class="app" data-show="6.4,8.4">
+          <p>Your progress</p><h4>This week</h4>
+          <div class="streak"><b><span data-count="0,21,6.6,1.2">21</span> days</b>current streak</div>
+          <div class="bars"><i data-in="growY@6.8/.6" style="height:40%"></i><i data-in="growY@6.9/.6" style="height:65%"></i><i data-in="growY@7/.6" style="height:55%"></i><i data-in="growY@7.1/.6" style="height:85%"></i><i data-in="growY@7.2/.6" style="height:70%"></i><i data-in="growY@7.3/.6" style="height:95%"></i><i data-in="growY@7.4/.6" style="height:80%"></i></div>
+        </div>
+        <!-- screen C: smart reminder -->
+        <div class="app" data-show="8.4,99">
+          <p>Settings</p><h4>Reminders</h4>
+          <div class="remind" data-in="fadeDown@8.6/.6"><span class="ico">BELL</span><span>Time to read 📖<br><span style="opacity:.6;font-weight:500">You usually read at 9 pm</span></span></div>
+          <div class="habit" style="margin-top:30px">Quiet hours<span style="margin-left:auto;opacity:.6">22:00 – 7:00</span></div>
+        </div>
+      </div>
+    </div>
+    <div class="tap" style="left:446px;top:577px" data-tap="5.2"></div>
+  </div>
+
+  <!-- 4. Benefit chips around the phone -->
+  <script>window.CHIPS = [
+    { icon: 'check', text: 'One tap a day', at: 4.6, side: 'left', top: 1250 },
+    { icon: 'bolt', text: '21-day streaks', at: 6.5, side: 'right', top: 1450 },
+    { icon: 'bell', text: 'Smart reminders', at: 8.6, side: 'left', top: 1600 },
+  ];</script>
+
+  <!-- 5. Ticker line over a fan of screens -->
+  <div class="top center" data-show="10.4,12.6">
+    <div class="h1" data-in="fadeUp@10.4">Track <span class="accent" data-ticker="10.6,.55"><span>sleep</span><span>water</span><span>reading</span><span>workouts</span><span>anything</span></span></div>
+  </div>
+  <div class="fan stage3d" data-show="10.4,12.6">
+    <div class="phone sm" style="--screen-bg:var(--accent)" data-in="flyIn@10.5/.9"><div class="screen" style="transform:none"></div></div>
+  </div>
+  <div class="fan stage3d" data-show="10.4,12.6">
+    <div class="phone sm" style="rotate:-14deg;translate:-300px 80px" data-in="flyIn@10.6/.9"><div class="screen app"><div class="statusbar"></div><h4>Sleep</h4><div class="streak"><b>7h 40</b>last night</div></div></div>
+    <div class="phone sm" style="rotate:14deg;translate:300px 80px" data-in="flyIn@10.7/.9"><div class="screen app"><div class="statusbar"></div><h4>Water</h4><div class="streak"><b>1.6 L</b>of 2 L</div></div></div>
+    <div class="phone sm" style="z-index:2" data-in="flyIn@10.8/.9"><div class="screen app"><div class="statusbar"></div><h4>Reading</h4><div class="streak"><b>142</b>pages this week</div></div></div>
+  </div>
+
+  <div class="disclaimer" data-out="fadeOut@12.4">App screens and figures are illustrative</div>
+
+<script src="engine/motion.js"></script>
+<script>
+  // put real icons in the placeholders written as words above
+  document.querySelectorAll('.box').forEach((b) => b.innerHTML = b.innerHTML.replace('CHECK', icon('check')));
+  document.querySelectorAll('.remind .ico').forEach((b) => b.innerHTML = icon('bell'));
+  const dy = { story: 0, feed: -420, square: -560 }[FORMAT];
+  chips(CHIPS.map((c) => ({ ...c, top: c.top + dy })));
+  endcard({ at: 12.6, name: 'Tempo', tagline: 'Small habits, every day.', stores: ['apple', 'google'], storeNote: 'Coming soon on', note: 'tempo.app' });
+</script>
+</body>
+</html>

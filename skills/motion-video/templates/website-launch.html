@@ -1,0 +1,107 @@
+<!doctype html>
+<!-- TEMPLATE website-launch · 14 s · landscape / story / square
+     Beats: 0-2.2 statement · 2.2-4 browser arrives, URL types, page loads · 4-9.6 the page scrolls, three chips name
+            what it offers, the cursor clicks the main button · 9.6-11.6 same site on a phone · 11.6-14 endcard with the URL.
+     The page inside the browser is plain HTML here. With a live site, capture it with
+     `node <skill>/scripts/capture.mjs https://site --out assets/site-desktop.png` and replace .site with
+     <img src="assets/site-desktop.png">. Only show the top of a real site if lower parts show real people's data. -->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Website launch</title>
+<link rel="stylesheet" href="engine/motion.css">
+<link rel="stylesheet" href="style.css">
+<style>
+  .br-wrap { position: absolute; left: 80px; right: 80px; top: 520px; height: 1180px; }
+  body.landscape .br-wrap { left: 300px; right: 300px; top: 150px; height: 860px; }
+  body.square .br-wrap { left: 70px; right: 70px; top: 230px; height: 780px; }
+  .br-wrap .browser { inset: 0; }
+
+  /* stand-in site (replace with a capture) */
+  .site { position: absolute; left: 0; right: 0; top: 0; font-family: var(--font); color: #1a1a1a; background: #fbfaf7; }
+  .site nav { display: flex; align-items: center; gap: 30px; padding: 26px 40px; font: 600 22px var(--font); }
+  .site nav b { font-size: 30px; margin-right: auto; letter-spacing: -.02em; }
+  .site nav .cta { background: var(--accent); color: var(--accent-ink); padding: 12px 22px; border-radius: 30px; }
+  .site .hero { padding: 50px 40px 40px; }
+  .site h1 { font: 800 76px/1 var(--font-display); letter-spacing: -.04em; max-width: 800px; }
+  .site .hero p { font: 500 26px/1.45 var(--font); color: #666; max-width: 620px; margin: 22px 0 30px; }
+  .site .go { display: inline-block; background: #1a1a1a; color: #fff; padding: 20px 34px; border-radius: 40px; font: 700 24px var(--font); }
+  .site .img { height: 380px; margin: 40px; border-radius: 24px; background: linear-gradient(135deg, var(--accent), var(--accent2)); }
+  .site .grid3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; padding: 0 40px 40px; }
+  .site .grid3 div { height: 260px; border-radius: 20px; background: #eee9df; padding: 22px; font: 700 24px var(--font); }
+  .site .price { margin: 0 40px 60px; padding: 40px; border-radius: 24px; background: #1a1a1a; color: #fff; font: 800 48px var(--font); }
+
+  .scroller { position: absolute; left: 0; right: 0; top: 0; }
+  @keyframes scrollPage { 0%, 12% { transform: translateY(0) } 55%, 70% { transform: translateY(-38%) } 100% { transform: translateY(-8%) } }
+
+  .ph-wrap { position: absolute; left: 50%; top: 520px; width: 420px; height: 870px; margin-left: -210px; }
+  body.landscape .ph-wrap { top: 120px; } body.square .ph-wrap { top: 160px; transform: scale(.85); transform-origin: 50% 0; }
+  .ph-wrap .phone { left: 0; top: 0; }
+  .site.mobile h1 { font-size: 52px; } .site.mobile .hero { padding: 120px 28px 20px; } .site.mobile .img { margin: 20px 28px; height: 260px; } .site.mobile nav { padding: 70px 28px 0; position: absolute; }
+</style>
+</head>
+<body data-duration="14" data-formats="landscape,story,square">
+  <div class="bg-dots"></div>
+  <div class="bg-glow" style="width:900px;height:900px;left:-300px;top:-300px" data-loop="drift/10"></div>
+
+  <!-- 1. Statement -->
+  <div class="top center" data-out="outUp@2.1/.4">
+    <div class="h1" data-words=".2,.1">Our new site <span class="grad">is live</span></div>
+  </div>
+
+  <!-- 2. Headline during the browser part -->
+  <div class="top center" data-show="2.2,9.6" style="top:200px">
+    <div class="h2" data-in="fadeUp@2.4">Everything in one place</div>
+  </div>
+  <style>body.landscape .top { top: 40px !important } body.landscape .top .h2, body.landscape .top .h1 { font-size: 64px } body.square .top { top: 80px !important }</style>
+
+  <!-- 3. Browser -->
+  <div class="br-wrap" data-out="outScale@9.4/.5">
+    <div class="browser" data-in="fadeUp@2.2/.9">
+      <div class="bar"><span class="lights"><i></i><i></i><i></i></span><span class="url"><span data-type="2.9,12">northwind.studio</span></span></div>
+      <div class="progress" data-in="grow@4/.5" style="opacity:1"></div>
+      <div class="view">
+        <div class="scroller" data-in="scrollPage@4.4/5" style="animation-timing-function:var(--ease-io)">
+          <div class="site" data-in="fadeIn@4.3/.3">
+            <nav><b>Northwind</b><span>Work</span><span>Studio</span><span>Prices</span><span class="cta">Book a call</span></nav>
+            <div class="hero"><h1>Interiors for small spaces</h1><p>We design flats and shops under 80 m², from the first sketch to the last shelf.</p><span class="go" id="go">See our work</span></div>
+            <div class="img"></div>
+            <div class="grid3"><div>Kitchens</div><div>Living rooms</div><div>Shops</div></div>
+            <div class="price">From 1,200 € a room</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="cursor" style="left:62%;top:78%" data-in="fadeIn@7.4/.3" data-out="fadeOut@9.1/.2"><span data-in="riseIn@7.4/.9" style="display:block">CURSOR</span></div>
+    <div class="tap" style="left:63%;top:80%" data-tap="8.5"></div>
+  </div>
+
+  <script>window.CHIPS = [
+    { icon: 'sparkles', text: 'New portfolio', at: 4.8, side: 'left', top: 760 },
+    { icon: 'calendar', text: 'Book a call online', at: 6, side: 'right', top: 1060 },
+    { icon: 'card', text: 'Clear prices', at: 7.2, side: 'left', top: 1360 },
+  ];</script>
+
+  <!-- 4. Same site on a phone -->
+  <div class="top center" data-show="9.6,11.6"><div class="h2" data-in="fadeUp@9.7">And on your phone</div></div>
+  <div class="ph-wrap stage3d" data-show="9.6,11.6">
+    <div class="phone sm" data-in="phoneIn@9.6/1" data-loop="float/4">
+      <div class="screen" style="--screen-bg:#fbfaf7">
+        <div class="site mobile">
+          <nav><b>Northwind</b></nav>
+          <div class="hero"><h1>Interiors for small spaces</h1></div>
+          <div class="img"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+<script src="engine/motion.js"></script>
+<script>
+  document.querySelectorAll('.cursor > span').forEach((c) => c.innerHTML = icon('cursor'));
+  const dy = { landscape: -560, story: 0, square: -520 }[FORMAT];
+  chips(CHIPS.map((c) => ({ ...c, top: c.top + dy, inset: FORMAT === 'landscape' ? 90 : 40 })));
+  endcard({ at: 11.6, name: 'Northwind', tagline: 'Interiors for small spaces', cta: 'northwind.studio' });
+</script>
+</body>
+</html>
