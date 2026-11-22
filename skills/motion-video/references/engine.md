@@ -20,6 +20,7 @@ A video is an HTML page that links `engine/motion.css`, `style.css`, then loads 
 | `data-count` | `0,1200,3,1.5,0` | count from, to, start, duration, decimals (locale of `<html lang>`) |
 | `data-ticker` | `2,1.4` | roll child `<span>`s every 1.4 s from 2 s |
 | `data-tap` | `5.2` | tap ring at 5.2 s (on a `.tap` element) |
+| `data-check` | `note` | how `check.mjs` treats the element: `ignore`, `ui`, `note`, `overlap` |
 
 An element can have `data-in`, `data-out` and `data-loop` together. Entrance and loop both drive `transform`: the
 later one in the list wins, so put a loop on a wrapper when the entrance also moves the element.
@@ -46,6 +47,17 @@ grounds `bg-glow bg-grid bg-dots bg-mesh grain` · devices `stage3d phone phone.
 `--bg --bg2 --ink --muted --accent --accent-ink --accent2 --card --card-ink --line --font --font-display
 --display-weight --tracking --radius --shadow --screen-bg --screen-ink --end-bg --end-ink --end-btn --end-btn-ink
 --pad --ease --ease-pop --ease-io`.
+
+## Check (`node engine/check.mjs video.html`)
+Rules, each reported with a time range, the element and a fix: `safe-zone` (story: text inside x 60–960, y 270–1250,
+clear of the Reels/TikTok/Shorts buttons and caption; other formats: a 5 % margin), `off-frame`, `cut-off`,
+`overlap`, `covered`, `read-time` (0.5 s + 0.3 s a word), `last-line` (2 s), `end-card` (2.5 s), `small-text`
+(2.6 % of the short side, 20 px for small print), `contrast` (3:1 at least), `crowded` (over 18 words at once),
+`never-shown`, `load`. Errors make the exit code 1. `--format story` checks one format, `--json` prints findings.
+
+`data-check` on an element (inherited by its children): `ignore` never checked · `ui` app or site UI that is not
+read as a line (`.phone` and `.browser` content is treated so already) · `note` small print such as
+`.disclaimer` and store-badge captions · `overlap` a designed overlap.
 
 ## Rules that keep frames exact
 - Everything that moves must be a CSS animation or computed in `seek`/`onSeek` from `t`. No `setTimeout`,

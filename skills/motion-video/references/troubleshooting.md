@@ -2,6 +2,10 @@
 
 | Symptom | Cause and fix |
 |---|---|
+| `check` reports `safe-zone` in story | move the text inside x 60–960, y 270–1250; use `.top`/`.bottom`, which already do |
+| `check` reports `read-time` | hold the line longer or cut words; a split line counts from when most words are in |
+| `check` reports `covered` | something opaque is drawn on top (a later element, a card): raise the text's `z-index` or retime |
+| `check` flags app text inside a phone | it is not inside `.phone`/`.browser`: add `data-check="ui"` to its container |
 | `Playwright is missing` | run `npm install && npx playwright install chromium` in the project folder |
 | `ffmpeg is not on the PATH` | install ffmpeg (macOS `brew install ffmpeg`, Ubuntu `sudo apt install ffmpeg`, Windows `winget install ffmpeg`) |
 | Fallback font in the frames | the Google Fonts `@import` needs network at render time; or ship `.woff2` files with `@font-face` |

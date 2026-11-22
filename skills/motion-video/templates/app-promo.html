@@ -1,7 +1,7 @@
 <!doctype html>
 <!-- TEMPLATE app-promo · 15 s · story / feed / square
      Beats: 0-2.4 kinetic intro · 2.4-4.4 phone arrives tilted · 4.4-10.4 three features inside the phone with chips
-            · 10.4-12.6 ticker line over a fan of screens · 12.6-15 endcard.
+            · 10.4-12.2 ticker line over a fan of screens · 12.2-15 endcard.
      Replace every name, screen and text with the client's. Screens are plain HTML here; swap a .screen's content for
      <img class="shot" src="assets/screen-1.png"> when the client gives screenshots. -->
 <html lang="en">
@@ -90,34 +90,34 @@
 
   <!-- 4. Benefit chips around the phone -->
   <script>window.CHIPS = [
-    { icon: 'check', text: 'One tap a day', at: 4.6, side: 'left', top: 1250 },
-    { icon: 'bolt', text: '21-day streaks', at: 6.5, side: 'right', top: 1450 },
-    { icon: 'bell', text: 'Smart reminders', at: 8.6, side: 'left', top: 1600 },
+    { icon: 'check', text: 'One tap a day', at: 4.6, side: 'left', top: 760 },
+    { icon: 'bolt', text: '21-day streaks', at: 6.5, side: 'right', top: 960 },
+    { icon: 'bell', text: 'Smart reminders', at: 8.6, side: 'left', top: 1140 },
   ];</script>
 
   <!-- 5. Ticker line over a fan of screens -->
-  <div class="top center" data-show="10.4,12.6">
+  <div class="top center" data-show="10.4,12.2">
     <div class="h1" data-in="fadeUp@10.4">Track <span class="accent" data-ticker="10.6,.55"><span>sleep</span><span>water</span><span>reading</span><span>workouts</span><span>anything</span></span></div>
   </div>
-  <div class="fan stage3d" data-show="10.4,12.6">
+  <div class="fan stage3d" data-show="10.4,12.2">
     <div class="phone sm" style="--screen-bg:var(--accent)" data-in="flyIn@10.5/.9"><div class="screen" style="transform:none"></div></div>
   </div>
-  <div class="fan stage3d" data-show="10.4,12.6">
+  <div class="fan stage3d" data-show="10.4,12.2">
     <div class="phone sm" style="rotate:-14deg;translate:-300px 80px" data-in="flyIn@10.6/.9"><div class="screen app"><div class="statusbar"></div><h4>Sleep</h4><div class="streak"><b>7h 40</b>last night</div></div></div>
     <div class="phone sm" style="rotate:14deg;translate:300px 80px" data-in="flyIn@10.7/.9"><div class="screen app"><div class="statusbar"></div><h4>Water</h4><div class="streak"><b>1.6 L</b>of 2 L</div></div></div>
     <div class="phone sm" style="z-index:2" data-in="flyIn@10.8/.9"><div class="screen app"><div class="statusbar"></div><h4>Reading</h4><div class="streak"><b>142</b>pages this week</div></div></div>
   </div>
 
-  <div class="disclaimer" data-out="fadeOut@12.4">App screens and figures are illustrative</div>
+  <div class="disclaimer" data-out="fadeOut@12">App screens and figures are illustrative</div>
 
 <script src="engine/motion.js"></script>
 <script>
   // put real icons in the placeholders written as words above
   document.querySelectorAll('.box').forEach((b) => b.innerHTML = b.innerHTML.replace('CHECK', icon('check')));
   document.querySelectorAll('.remind .ico').forEach((b) => b.innerHTML = icon('bell'));
-  const dy = { story: 0, feed: -420, square: -560 }[FORMAT];
+  const dy = { story: 0, feed: -400, square: -560 }[FORMAT];
   chips(CHIPS.map((c) => ({ ...c, top: c.top + dy })));
-  endcard({ at: 12.6, name: 'Tempo', tagline: 'Small habits, every day.', stores: ['apple', 'google'], storeNote: 'Coming soon on', note: 'tempo.app' });
+  endcard({ at: 12.2, name: 'Tempo', tagline: 'Small habits, every day.', stores: ['apple', 'google'], storeNote: 'Coming soon on', note: 'tempo.app' });
 </script>
 </body>
 </html>

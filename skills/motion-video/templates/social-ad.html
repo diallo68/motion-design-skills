@@ -1,8 +1,8 @@
 <!doctype html>
-<!-- TEMPLATE social-ad · 10 s · story / feed / square — built to work muted, read in a scroll
-     Beats: 0-1.8 hook (the viewer's problem, in their words) · 1.8-3.4 the product answers it ·
-            3.4-7.2 three proofs, one card each, stacked · 7.2-8.2 the offer · 8.2-10 call to action.
-     Keep each line under about 7 words: people read it while the feed moves. -->
+<!-- TEMPLATE social-ad · 12 s · story / feed / square — built to work muted, read in a scroll
+     Beats: 0-2.5 hook (the viewer's problem, in their words) · 2.5-5 the product answers it ·
+            5-9.2 three proofs, one card each, stacked · 9.2-12 the offer on the end card.
+     Every line stays up 0.5 s + 0.3 s a word (check.mjs measures it): cut words before you cut time. -->
 <html lang="en">
 <head>
 <meta charset="utf-8">
@@ -12,54 +12,42 @@
 <style>
   .hook { font-size: 128px; }
   body.feed .hook, body.square .hook { font-size: 104px; }
-  .cards { position: absolute; left: var(--pad); right: var(--pad); top: 760px; display: grid; gap: 30px; }
-  body.feed .cards { top: 470px; } body.square .cards { top: 330px; gap: 20px; }
+  .cards { position: absolute; left: var(--pad); right: var(--pad); top: 560px; display: grid; gap: 30px; }
+  body.feed .cards { top: 330px; } body.square .cards { top: 200px; gap: 20px; }
   .card { display: flex; align-items: center; gap: 30px; font: 700 46px/1.15 var(--font); }
   body.square .card { padding: 26px; font-size: 40px; }
   .card .ico { width: 100px; height: 100px; border-radius: 28px; display: grid; place-items: center; background: var(--accent); color: var(--accent-ink); flex: none; }
   .card .ico svg { width: 54px; height: 54px; }
   .card small { display: block; font: 500 30px var(--font); color: var(--muted); margin-top: 6px; }
-  .big { font: var(--display-weight) 260px/1 var(--font-display); letter-spacing: -.05em; }
-  body.square .big { font-size: 200px; }
 </style>
 </head>
-<body data-duration="10" data-formats="story,feed,square">
+<body data-duration="12" data-formats="story,feed,square">
   <div class="bg-mesh"></div>
 
   <!-- 1. Hook -->
-  <div class="mid" data-out="outUp@1.75/.35">
+  <div class="mid" data-out="outUp@2.4/.35">
     <div class="display hook" data-words=".05,.12">Still splitting bills by hand?</div>
   </div>
 
   <!-- 2. Answer -->
-  <div class="mid center" data-show="1.8,3.4" data-out="outBlur@3.2/.3">
-    <div class="label" data-in="fadeIn@1.85/.3">Meet</div>
-    <div class="display" style="font-size:180px" data-in="zoomIn@1.9/.7"><span class="grad">Splitly</span></div>
-    <div class="lead" style="margin-top:24px" data-in="fadeUp@2.3">Shared expenses, settled in one tap.</div>
+  <div class="mid center" data-show="2.5,5" data-out="outBlur@4.75/.25">
+    <div class="label" data-in="fadeIn@2.5/.3">Meet</div>
+    <div class="display" style="font-size:180px" data-in="zoomIn@2.55/.7"><span class="grad">Splitly</span></div>
+    <div class="lead" style="margin-top:24px" data-in="fadeUp@2.75/.6">Bills settled in one tap.</div>
   </div>
 
-  <!-- 3. Three proofs -->
-  <div class="top" data-show="3.4,7.2" style="top:300px">
-    <div class="h2" data-in="fadeUp@3.4/.5">How it works</div>
-  </div>
-  <style>body.feed .top { top: 150px !important } body.square .top { top: 90px !important }</style>
-  <div class="cards" data-show="3.4,7.2">
-    <div class="card" data-in="slideR@3.6/.6"><span class="ico">ICO:card</span><span>Add a receipt<small>Snap it, totals are read for you</small></span></div>
-    <div class="card" data-in="slideR@4.6/.6"><span class="ico">ICO:users</span><span>Split with friends<small>Evenly, by item or by share</small></span></div>
-    <div class="card" data-in="slideR@5.6/.6"><span class="ico">ICO:check</span><span>Settle up<small>One payment closes the group</small></span></div>
-  </div>
-
-  <!-- 4. Offer -->
-  <div class="mid center" data-show="7.2,8.2">
-    <div class="label" data-in="fadeIn@7.2/.3">Free for groups up to</div>
-    <div class="big" data-in="pop@7.3/.5"><span data-count="0,8,7.35,.6">8</span></div>
-    <div class="lead" data-in="fadeUp@7.5/.5">people</div>
+  <!-- 3. Three proofs: one card a second, all three held together long enough to read the last -->
+  <div class="cards" data-show="5,9.2">
+    <div class="card" data-in="slideR@5.1/.6"><span class="ico">ICO:card</span><span>Add a receipt<small>Totals read for you</small></span></div>
+    <div class="card" data-in="slideR@6.1/.6"><span class="ico">ICO:users</span><span>Split with friends<small>Evenly or by item</small></span></div>
+    <div class="card" data-in="slideR@7.1/.6"><span class="ico">ICO:check</span><span>Settle up<small>One payment</small></span></div>
   </div>
 
 <script src="engine/motion.js"></script>
 <script>
   document.querySelectorAll('.ico').forEach((e) => { const m = e.textContent.match(/ICO:(\w+)/); if (m) e.innerHTML = icon(m[1]); });
-  endcard({ at: 8.2, name: 'Splitly', tagline: 'Split it. Settle it.', cta: 'Download free', stores: ['apple', 'google'] });
+  // the offer is the end card's line: name, offer, one action
+  endcard({ at: 9.2, name: 'Splitly', tagline: 'Free for groups up to 8', cta: 'Download free', stores: ['apple', 'google'] });
 </script>
 </body>
 </html>
