@@ -20,20 +20,28 @@ A video is an HTML page that links `engine/motion.css`, `style.css`, then loads 
 | `data-count` | `0,1200,3,1.5,0` | count from, to, start, duration, decimals (locale of `<html lang>`) |
 | `data-ticker` | `2,1.4` | roll child `<span>`s every 1.4 s from 2 s |
 | `data-tap` | `5.2` | tap ring at 5.2 s (on a `.tap` element) |
+| `data-cam` | `2/.6 1.8 0 -240; 4/.5 1 0 0` | camera on a `.cam` wrapper: states `at/duration scale x y [ease]` in order |
+| `data-become` | `9.9/.6` | grows past the frame (measured on its start frame); its fill becomes the next ground |
+| `data-from` | `#go` | an `iris` on a `.flood` starts from that element's centre |
 | `data-check` | `note` | how `check.mjs` treats the element: `ignore`, `ui`, `note`, `overlap` |
+
+Any timing may name its ease after a colon: `fadeUp@1.2/.8:move`. Eases: `arrive` (entrances, default), `leave`
+(exits, default), `move` (floods, irises, camera, default), `pop`, `linear`. Exits default to 0.4 s.
 
 An element can have `data-in`, `data-out` and `data-loop` together. Entrance and loop both drive `transform`: the
 later one in the list wins, so put a loop on a wrapper when the entrance also moves the element.
 
 ## Keyframes
 Entrances: `fadeIn fadeUp fadeDown slideL slideR pop zoomIn zoomOut blurIn maskUp maskRight wordIn riseIn phoneIn
-tiltIn flyIn grow growY tapRing press`. Exits: `fadeOut outUp outDown outScale outBlur`. Loops: `float floatTilt
+tiltIn flyIn grow growY tapRing press settle`. Exits: `fadeOut outUp outDown outScale outBlur`. Transitions: `iris
+whipOutL whipOutR whipOutUp whipInL whipInR whipInUp dip` (see moves 19–25). Loops: `float floatTilt
 spin pulse drift marquee marqueeY`. Add your own `@keyframes` in the page and use them by name.
 
 ## Components (classes)
 Type `display h1 h2 lead label accent muted hl grad center` · layout `layer abs stack row top mid bottom` ·
 grounds `bg-glow bg-grid bg-dots bg-mesh grain` · devices `stage3d phone phone.sm screen statusbar shot` ·
-`browser bar lights url view progress` · `card glass chip pill btn store` · `cursor tap` · `disclaimer`.
+`browser bar lights url view progress` · `card glass chip pill btn store` · `cursor tap` · `disclaimer` ·
+transitions `cam flood dip`.
 
 ## Helpers (JS, after motion.js)
 - `icon(name)` — SVG: `sparkles check bolt heart star bell chat lock lockOpen chart calendar search user users globe
@@ -46,14 +54,14 @@ grounds `bg-glow bg-grid bg-dots bg-mesh grain` · devices `stage3d phone phone.
 ## Variables (set by the style, override in the page)
 `--bg --bg2 --ink --muted --accent --accent-ink --accent2 --card --card-ink --line --font --font-display
 --display-weight --tracking --radius --shadow --screen-bg --screen-ink --end-bg --end-ink --end-btn --end-btn-ink
---pad --ease --ease-pop --ease-io`.
+--pad --ease --ease-pop --ease-io --ease-arrive --ease-move --ease-leave`.
 
 ## Check (`node engine/check.mjs video.html`)
 Rules, each reported with a time range, the element and a fix: `safe-zone` (story: text inside x 60–960, y 270–1250,
 clear of the Reels/TikTok/Shorts buttons and caption; other formats: a 5 % margin), `off-frame`, `cut-off`,
 `overlap`, `covered`, `read-time` (0.5 s + 0.3 s a word), `last-line` (2 s), `end-card` (2.5 s), `small-text`
 (2.6 % of the short side, 20 px for small print), `contrast` (3:1 at least), `crowded` (over 18 words at once),
-`never-shown`, `load`. Errors make the exit code 1. `--format story` checks one format, `--json` prints findings.
+`never-shown`, `load`, and motion warnings `moving-text` (a loop on text), `same-entrance`, `tap-ring`. Errors make the exit code 1. `--format story` checks one format, `--json` prints findings.
 
 `data-check` on an element (inherited by its children): `ignore` never checked · `ui` app or site UI that is not
 read as a line (`.phone` and `.browser` content is treated so already) · `note` small print such as

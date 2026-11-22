@@ -1,8 +1,9 @@
 # Motion design skills
 
 An agent skill that makes **motion design videos** — app promos, website launch videos and social media ads —
-in the style common on Dribbble and Pinterest: kinetic type, phones floating in 3D, UI cards, benefit chips, cursor
-taps, rolling words, counters and end cards with store badges. Each video is an HTML page rendered frame by frame
+in the style common on Dribbble and Pinterest: kinetic type, phones arriving in 3D, camera punch-ins, transitions
+that grow out of what is on screen, UI cards, benefit chips, presses,
+rolling words, counters and end cards with store badges. Each video is an HTML page rendered frame by frame
 to MP4, in the formats the platforms want:
 
 | Format | Size | For |
@@ -54,7 +55,8 @@ Open `video.html?format=feed&t=4` in a browser to look at any moment while you e
 - **3 templates** (working videos to start from, each passing the check): `app-promo` 15 s, `website-launch` 15 s,
   `social-ad` 12 s.
 - **6 styles**: `midnight-glow`, `pastel-pop`, `bold-type`, `clean-light`, `neon-lime`, `warm-editorial`.
-- **18 moves** documented with markup in `skills/motion-video/references/moves.md`.
+- **25 moves** documented with markup in `skills/motion-video/references/moves.md`, including transitions with a
+  cause (punch-in camera, object becomes the world, iris from the tap, colour flood, whip) and eases by role.
 - **An engine** of plain CSS keyframes and `data-` attributes (`data-in="fadeUp@1.2"`, `data-words`,
   `data-ticker`, `data-count`, `data-type`…), and a deterministic renderer (Playwright + ffmpeg).
 - **A quality check** (`check.mjs`) that plays the video and measures every line of text every 0.1 s in every

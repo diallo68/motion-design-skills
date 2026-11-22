@@ -1,7 +1,8 @@
 <!doctype html>
 <!-- TEMPLATE app-promo · 15 s · story / feed / square
-     Beats: 0-2.4 kinetic intro · 2.4-4.4 phone arrives tilted · 4.4-10.4 three features inside the phone with chips
-            · 10.4-12.2 ticker line over a fan of screens · 12.2-15 endcard.
+     Beats: 0-2.4 kinetic intro · 2.4-4.4 phone arrives · 4.4-9.9 three features inside the phone with chips, a
+            punch-in on the streak · 9.9-10.5 the phone grows past the frame and becomes the next scene ·
+            10.4-12.2 ticker line over a fan of screens · 12.2-15 endcard.
      Replace every name, screen and text with the client's. Screens are plain HTML stand-ins here: capture the real
      app with `node <skill>/scripts/capture-app.mjs home` and swap each .app block for
      <img class="shot" src="assets/screens/home.png"> (keep the .statusbar above it). -->
@@ -17,6 +18,8 @@
   body.feed .ph-wrap { top: 330px; transform: scale(.8); }
   body.square .ph-wrap { top: 250px; transform: scale(.66); }
   .ph-wrap .phone { left: 0; top: 0; }
+  /* the camera magnifies from the phone's top edge, so the phone never climbs over the headline */
+  .cam { transform-origin: 50% 600px; } body.feed .cam { transform-origin: 50% 330px; } body.square .cam { transform-origin: 50% 250px; }
   .glow1 { width: 900px; height: 900px; left: 90px; top: 700px; }
 
   /* app screens (HTML stand-ins) */
@@ -53,15 +56,17 @@
   </div>
 
   <!-- 2. Headline that stays while the phone plays -->
-  <div class="top center" data-show="2.4,10.4">
+  <div class="top center" data-show="2.4,10.4" data-out="outBlur@9.8/.2">
     <div class="h1" data-words="2.5,.09">Build habits <span class="accent">that stick</span></div>
   </div>
 
   <div class="bg-glow glow1" data-in="fadeIn@2.4/1" data-loop="pulse/5" data-out="fadeOut@10.2"></div>
 
-  <!-- 3. The phone: one device, its screen changes with data-show -->
-  <div class="ph-wrap stage3d" data-out="outDown@10.1/.5">
-    <div class="phone" data-in="phoneIn@2.5/1.2">
+  <!-- 3. The phone: one device, its screen changes with data-show. The camera punches in on the streak, then the
+       phone grows past the frame (data-become): its screen becomes the ground of the next scene. -->
+  <div class="cam" data-cam="6.55/.6 1.4 0 0; 8.2/.5 1 0 0">
+  <div class="ph-wrap stage3d" data-show="0,10.6">
+    <div class="phone" data-in="phoneIn@2.5/1.2" data-become="9.9/.6">
       <div class="screen">
         <div class="statusbar"><span>9:41</span><span>●●● ▮</span></div>
         <!-- screen A: today's habits, one gets ticked -->
@@ -69,7 +74,7 @@
           <p>Tuesday</p><h4>Today</h4>
           <div class="habit"><span class="dot" style="background:#ffe3c2">☀️</span>Morning walk<span class="box on">CHECK</span></div>
           <div class="habit"><span class="dot" style="background:#d7f5e6">💧</span>Drink 2 L water<span class="box on">CHECK</span></div>
-          <div class="habit"><span class="dot" style="background:#e3e0ff">📖</span>Read 20 pages<span class="box" style="position:relative"><span class="box on" style="position:absolute;inset:-4px;margin:0" data-in="pop@5.3/.4">CHECK</span></span></div>
+          <div class="habit" data-in="press@5.1/.3"><span class="dot" style="background:#e3e0ff">📖</span>Read 20 pages<span class="box" style="position:relative"><span class="box on" style="position:absolute;inset:-4px;margin:0" data-in="pop@5.3/.4">CHECK</span></span></div>
           <div class="habit"><span class="dot" style="background:#ffd9e4">🧘</span>Stretch 10 min<span class="box"></span></div>
         </div>
         <!-- screen B: streak and weekly chart -->
@@ -86,17 +91,18 @@
         </div>
       </div>
     </div>
-    <div class="tap" style="left:446px;top:577px" data-tap="5.2"></div>
+  </div>
   </div>
 
   <!-- 4. Benefit chips around the phone -->
   <script>window.CHIPS = [
     { icon: 'check', text: 'One tap a day', at: 4.6, side: 'left', top: 760 },
     { icon: 'bolt', text: '21-day streaks', at: 6.5, side: 'right', top: 960 },
-    { icon: 'bell', text: 'Smart reminders', at: 8.6, side: 'left', top: 1140 },
+    { icon: 'bell', text: 'Smart reminders', at: 8.6, side: 'left', top: 1140, hold: 1.2 },
   ];</script>
 
-  <!-- 5. Ticker line over a fan of screens -->
+  <!-- 5. Ticker line over a fan of screens, on a ground that fades in while the phone is still growing -->
+  <div class="layer" style="background:var(--bg)" data-show="10.3,12.2" data-in="fadeIn@10.3/.25"><div class="bg-mesh"></div></div>
   <div class="top center" data-show="10.4,12.2">
     <div class="h1" data-in="fadeUp@10.4">Track <span class="accent" data-ticker="10.6,.55"><span>sleep</span><span>water</span><span>reading</span><span>workouts</span><span>anything</span></span></div>
   </div>

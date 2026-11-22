@@ -53,6 +53,11 @@ and structure (hook in the first 1.5 s, one idea per beat, 6–8 words of on-scr
 - **Moves**: pick 3 to 5 from `references/moves.md` (the catalogue of Dribbble/Pinterest patterns with the exact
   markup for each). A video that uses every move looks like a template demo; one strong move per beat reads as
   designed.
+- **Transitions with a cause**: join the beats through something on screen, 2 to 4 kinds per film (moves 19–25):
+  a punch-in on the part of the screen the line names, the phone growing into the next scene, the next scene
+  opening from the button pressed, a whip between two lines. Write each one in the storyboard's Move column.
+- **Timing**: eases by role, exits half the entrance, a landed line holds still, entrances varied (moves.md,
+  Timing). Floating loops and tap rings are options, not defaults: show the UI acting and the press answering.
 
 ### 4. Start the project
 

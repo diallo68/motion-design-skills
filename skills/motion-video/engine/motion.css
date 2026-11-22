@@ -10,6 +10,8 @@
   --display-weight: 700; --tracking: -0.035em;
   --radius: 36px; --shadow: 0 40px 90px rgba(0,0,0,.35);
   --ease: cubic-bezier(.22,1,.36,1); --ease-pop: cubic-bezier(.34,1.56,.64,1); --ease-io: cubic-bezier(.65,0,.35,1);
+  /* eases by role: an arrival lands on a long tail, a camera move or a flood eases both ways, an exit accelerates */
+  --ease-arrive: cubic-bezier(.16,1,.3,1); --ease-move: cubic-bezier(.65,0,.35,1); --ease-leave: cubic-bezier(.55,0,1,.45);
   --pad: 90px;
 }
 body.feed { --H: 1350px; } body.square { --H: 1080px; } body.landscape { --W: 1920px; --H: 1080px; --pad: 120px; }
@@ -100,6 +102,10 @@ body.story .endcard { padding-top: 270px; padding-bottom: 670px; }   /* centred 
 .endcard .stores { display: flex; gap: 24px; flex-wrap: wrap; justify-content: center; }
 .endcard .btn { background: var(--end-btn, var(--accent)); color: var(--end-btn-ink, var(--accent-ink)); }
 .endcard .note { font: 500 28px var(--font); opacity: .6; }
+/* ---------- transitions with a cause ---------- */
+.flood { position: absolute; inset: 0; clip-path: circle(0% at var(--x, 50%) var(--y, 50%)); }   /* a colour or a scene opening from a point */
+.dip { position: absolute; inset: 0; background: #000; opacity: 0; pointer-events: none; z-index: 90; }
+.cam { position: absolute; inset: 0; transform-origin: 50% 50%; }                                   /* a camera wrapper: data-cam moves it */
 .disclaimer { position: absolute; left: 0; right: 0; bottom: 36px; text-align: center; font: 500 22px var(--font); opacity: .5; z-index: 60; }
 
 /* ---------- keyframes (used by data-in / data-out / data-loop) ---------- */
@@ -126,6 +132,16 @@ body.story .endcard { padding-top: 270px; padding-bottom: 670px; }   /* centred 
 @keyframes outDown { to { opacity: 0; transform: translateY(80px) } }
 @keyframes outScale { to { opacity: 0; transform: scale(.85) } }
 @keyframes outBlur { to { opacity: 0; filter: blur(24px) } }
+/* transitions */
+@keyframes iris { from { clip-path: circle(0% at var(--x, 50%) var(--y, 50%)) } to { clip-path: circle(150% at var(--x, 50%) var(--y, 50%)) } }
+@keyframes whipOutL { to { opacity: 0; transform: translateX(-70%); filter: blur(18px) } }
+@keyframes whipOutR { to { opacity: 0; transform: translateX(70%); filter: blur(18px) } }
+@keyframes whipOutUp { to { opacity: 0; transform: translateY(-50%); filter: blur(18px) } }
+@keyframes whipInL { from { opacity: 0; transform: translateX(-50%); filter: blur(18px) } 55% { opacity: 1; filter: blur(4px) } to { opacity: 1; transform: none; filter: none } }
+@keyframes whipInR { from { opacity: 0; transform: translateX(50%); filter: blur(18px) } 55% { opacity: 1; filter: blur(4px) } to { opacity: 1; transform: none; filter: none } }
+@keyframes whipInUp { from { opacity: 0; transform: translateY(40%); filter: blur(18px) } 55% { opacity: 1; filter: blur(4px) } to { opacity: 1; transform: none; filter: none } }
+@keyframes dip { 0% { opacity: 0 } 25%, 90% { opacity: .4 } 100% { opacity: 0 } }
+@keyframes settle { from { opacity: .2; transform: scale(1.08); filter: blur(6px) } to { opacity: 1; transform: none; filter: none } }
 @keyframes tapRing { 0% { opacity: 0; transform: scale(.3) } 15% { opacity: 1 } 100% { opacity: 0; transform: scale(1.4) } }
 @keyframes press { 0%, 100% { transform: scale(1) } 50% { transform: scale(.94) } }
 /* loops (data-loop) */

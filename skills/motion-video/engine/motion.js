@@ -11,7 +11,11 @@
 //   data-type="2,18"              type the text from 2 s at 18 characters per second
 //   data-count="0,1200,3,1.5,0"   count from 0 to 1200 starting at 3 s over 1.5 s, 0 decimals
 //   data-ticker="2,1.4"           rotate child <span>s every 1.4 s from 2 s (vertical word slot)
-//   data-tap="5.2"                a tap ring at 5.2 s (put it on a .tap element)
+//   data-tap="5.2"                a tap ring at 5.2 s (put it on a .tap element; prefer press on the tapped thing)
+//   data-in="fadeUp@1.2/.8:move"  any timing may name its ease: arrive, move, leave, pop, linear (default by role)
+//   data-cam="2/.6 1.8 0 -240; 4/.5 1 0 0"  camera on a wrapper: at/duration scale x y [ease], states in order
+//   data-become="9.9/.6"          the element grows past the frame (its fill becomes the next scene)
+//   data-from="#button"           a .flood or iris starts from the centre of that element (at its data-in time)
 // URL parameters: ?format=story|feed|square|landscape  &t=3.5 (preview a frame in a browser)
 
 (() => {
@@ -81,8 +85,16 @@
   };
 
   // ---------- compile data-* timing into Web Animations ----------
-  const parse = (s, dflt) => { const [name, rest] = s.split('@'); const [at, dur] = (rest || '0').split('/'); return { name, at: +at, dur: dur ? +dur : dflt }; };
-  const ease = (name) => (name === 'pop' ? 'var(--ease-pop)' : name.startsWith('out') || name === 'fadeOut' ? 'var(--ease-io)' : 'var(--ease)');
+  const parse = (s, dflt) => {
+    const [name, rest] = s.split('@'); const [time, ez] = (rest || '0').split(':'); const [at, dur] = time.split('/');
+    return { name, at: +at, dur: dur ? +dur : dflt, ez };
+  };
+  // ease by role unless named: arrivals land slowly, exits accelerate, floods and camera moves ease both ways
+  const EASES = { arrive: 'var(--ease-arrive)', move: 'var(--ease-move)', leave: 'var(--ease-leave)', pop: 'var(--ease-pop)', linear: 'linear' };
+  const ease = (name, ez) => EASES[ez] || (name === 'pop' ? EASES.pop : /^(out|fadeOut|whipOut)/.test(name) ? EASES.leave
+    : /^(iris|dip|grow)/.test(name) ? EASES.move : EASES.arrive);
+  const EASE_FN = { arrive: (p) => (p >= 1 ? 1 : 1 - Math.pow(2, -10 * p)), move: (p) => (p < .5 ? 4 * p * p * p : 1 - Math.pow(-2 * p + 2, 3) / 2),
+    leave: (p) => p * p * p, linear: (p) => p };
   function compile() {
     document.querySelectorAll('[data-words]:not([data-words-done])').forEach((el) => {
       // split only text nodes, so inner markup (<span class="accent">, <br>) survives
@@ -115,22 +127,66 @@
       if (el.dataset.compiled) return;
       const parts = [];
       if (el.dataset.loop) { const [name, dur] = el.dataset.loop.split('/'); parts.push(`${name} ${dur || 4}s ease-in-out 0s infinite both`); }
-      if (el.dataset.in) { const a = parse(el.dataset.in, 0.8); parts.push(`${a.name} ${a.dur}s ${ease(a.name)} ${a.at}s both`); }
-      if (el.dataset.out) { const a = parse(el.dataset.out, 0.5); parts.push(`${a.name} ${a.dur}s ${ease(a.name)} ${a.at}s forwards`); }
+      if (el.dataset.in) { const a = parse(el.dataset.in, 0.8); parts.push(`${a.name} ${a.dur}s ${ease(a.name, a.ez)} ${a.at}s both`); }
+      if (el.dataset.out) { const a = parse(el.dataset.out, 0.4); parts.push(`${a.name} ${a.dur}s ${ease(a.name, a.ez)} ${a.at}s forwards`); }
       el.style.animation = parts.join(', ');
       el.dataset.compiled = '1';
     });
   }
 
+  // ---------- moves measured on the page (become, from) ----------
+  // Each is measured once, on the frame where it starts, so every render computes the same numbers.
+  let measured = false;
+  function measure() {
+    if (measured) return; measured = true;
+    const jobs = [];
+    document.querySelectorAll('[data-become]').forEach((el) => { const a = parse(`become@${el.dataset.become}`, 0.6); jobs.push({ at: a.at, run: () => {
+      const r = el.getBoundingClientRect(); const W = innerWidth, H = innerHeight;
+      const k = Math.max(W / (r.width * 0.86), H / (r.height * 0.86));           // past the frame, bezel and corners included
+      const s = el.offsetWidth ? r.width / el.offsetWidth : 1;                    // scale of the ancestors (a scaled wrapper)
+      const dx = (W / 2 - (r.left + r.width / 2)) / s, dy = (H / 2 - (r.top + r.height / 2)) / s;
+      const from = getComputedStyle(el).transform; const base = from === 'none' ? '' : from;
+      el.animate([{ transform: `${base}`, borderRadius: getComputedStyle(el).borderRadius }, { transform: `translate(${dx}px, ${dy}px) ${base} scale(${k})`, borderRadius: '0px' }],
+        { delay: a.at * 1000, duration: a.dur * 1000, fill: 'forwards', easing: getComputedStyle(document.body).getPropertyValue(a.ez ? `--ease-${a.ez}` : '--ease-leave').trim() || 'ease-in' });
+    } }); });
+    document.querySelectorAll('[data-from]').forEach((el) => { const a = parse(el.dataset.in || 'x@0', 0.5); jobs.push({ at: a.at, run: () => {
+      const src = document.querySelector(el.dataset.from); if (!src) return;
+      const r = src.getBoundingClientRect(), b = el.getBoundingClientRect();
+      el.style.setProperty('--x', `${((r.left + r.width / 2 - b.left) / b.width) * 100}%`);
+      el.style.setProperty('--y', `${((r.top + r.height / 2 - b.top) / b.height) * 100}%`);
+    } }); });
+    for (const j of jobs.sort((x, y) => x.at - y.at)) { apply(j.at + 0.001); j.run(); }
+  }
+
+  // ---------- camera (data-cam): punch-ins, pans and zooms through, on a wrapper ----------
+  function camera(t) {
+    document.querySelectorAll('[data-cam]').forEach((el) => {
+      let cur = { s: 1, x: 0, y: 0 };
+      for (const seg of el.dataset.cam.split(';').map((x) => x.trim()).filter(Boolean)) {
+        const [time, s, x, y, ez] = seg.split(/\s+/); const [at, dur] = time.split('/').map(Number);
+        const end = { s: +s, x: +x || 0, y: +y || 0 };
+        if (t >= at + (dur || 0)) { cur = end; continue; }
+        if (t > at) { const p = (EASE_FN[ez] || EASE_FN.move)((t - at) / dur); cur = { s: cur.s + (end.s - cur.s) * p, x: cur.x + (end.x - cur.x) * p, y: cur.y + (end.y - cur.y) * p }; }
+        break;
+      }
+      el.style.transform = `translate(${cur.x}px, ${cur.y}px) scale(${cur.s})`;
+    });
+  }
+
   // ---------- the clock ----------
-  window.seek = (t) => {
-    compile();
+  function apply(t) {
     // visibility first: an element shown again restarts its animations, which we then set
     document.querySelectorAll('[data-show]').forEach((el) => {
       const [a, b] = el.dataset.show.split(',').map(Number);
       el.style.display = t >= a && (isNaN(b) || t < b) ? '' : 'none';
     });
     document.getAnimations().forEach((a) => { a.pause(); a.currentTime = t * 1000; });
+    camera(t);
+  }
+  window.seek = (t) => {
+    compile();
+    measure();
+    apply(t);
     document.querySelectorAll('[data-type]').forEach((el) => {
       const [at, cps] = el.dataset.type.split(',').map(Number);
       const full = el.dataset.full; const n = Math.max(0, Math.min(full.length, Math.floor((t - at) * (cps || 18))));
