@@ -59,7 +59,7 @@
   // ---------- helpers that write markup ----------
   // chips([{ icon, text, at, side: 'left'|'right', top, hold }]) — benefit pills that slide in and out.
   window.chips = (list, parent = document.body) => list.forEach((c) => {
-    const side = c.side === 'right' ? `right:${c.inset ?? 60}px` : `left:${c.inset ?? 60}px`;
+    const side = c.side === 'right' ? `right:${c.inset ?? (window.FORMAT === 'story' ? 130 : 60)}px` : `left:${c.inset ?? 60}px`;
     const out = c.hold === 0 ? '' : ` data-out="outScale@${(c.at + (c.hold || 2.6)).toFixed(2)}"`;
     parent.insertAdjacentHTML('beforeend', `<div class="chip" style="${side};top:${c.top}px" data-in="${c.side === 'right' ? 'slideR' : 'slideL'}@${c.at}"${out}><span class="ico">${icon(c.icon || 'check')}</span>${c.text}</div>`);
   });
@@ -68,15 +68,15 @@
   window.endcard = (o) => {
     const t = (x) => (o.at + x).toFixed(2);
     const stores = (o.stores || []).map((s) => s === 'apple'
-      ? `<span class="store">${icon('apple')}<span><small>${o.storeNote || 'Download on the'}</small>App Store</span></span>`
-      : `<span class="store">${icon('googleplay')}<span><small>${o.storeNote || 'Get it on'}</small>Google Play</span></span>`).join('');
+      ? `<span class="store">${icon('apple')}<span><small data-check="note">${o.storeNote || 'Download on the'}</small>App Store</span></span>`
+      : `<span class="store">${icon('googleplay')}<span><small data-check="note">${o.storeNote || 'Get it on'}</small>Google Play</span></span>`).join('');
     document.body.insertAdjacentHTML('beforeend', `<div class="endcard" data-in="fadeIn@${t(0)}/.6">
-      ${o.logo ? `<img class="logo" src="${o.logo}" alt="" data-in="pop@${t(.3)}/.7">` : ''}
-      ${o.name ? `<div class="name" data-in="fadeUp@${t(.5)}">${o.name}</div>` : ''}
-      ${o.tagline ? `<div class="tagline" data-in="fadeUp@${t(.75)}">${o.tagline}</div>` : ''}
-      ${o.cta ? `<div class="btn" data-in="pop@${t(1.1)}/.6">${o.cta}</div>` : ''}
-      ${stores ? `<div class="stores" data-in="fadeUp@${t(1.4)}">${stores}</div>` : ''}
-      ${o.note ? `<div class="note" data-in="fadeIn@${t(1.7)}">${o.note}</div>` : ''}
+      ${o.logo ? `<img class="logo" src="${o.logo}" alt="" data-in="pop@${t(.2)}/.6">` : ''}
+      ${o.name ? `<div class="name" data-in="fadeUp@${t(.3)}/.6">${o.name}</div>` : ''}
+      ${o.tagline ? `<div class="tagline" data-in="fadeUp@${t(.5)}/.6">${o.tagline}</div>` : ''}
+      ${o.cta ? `<div class="btn" data-in="pop@${t(.8)}/.5">${o.cta}</div>` : ''}
+      ${stores ? `<div class="stores" data-in="fadeUp@${t(1)}/.6">${stores}</div>` : ''}
+      ${o.note ? `<div class="note" data-in="fadeIn@${t(1.2)}">${o.note}</div>` : ''}
     </div>`);
   };
 

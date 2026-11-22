@@ -22,6 +22,6 @@ if (!existsSync(join(out, 'style.css'))) cpSync(join(skill, 'styles', `${style}.
 const target = join(out, `${name}.html`);
 if (existsSync(target)) { console.error(`${target} exists; pick another --name`); process.exit(1); }
 cpSync(join(skill, 'templates', `${template}.html`), target);
-if (!existsSync(join(out, 'package.json'))) writeFileSync(join(out, 'package.json'), JSON.stringify({ name: 'motion-video-project', private: true, type: 'module', scripts: { render: `node engine/render.mjs ${name}.html`, sheet: `node engine/render.mjs ${name}.html --sheet` }, devDependencies: { playwright: '^1.49.0' } }, null, 2));
+if (!existsSync(join(out, 'package.json'))) writeFileSync(join(out, 'package.json'), JSON.stringify({ name: 'motion-video-project', private: true, type: 'module', scripts: { check: `node engine/check.mjs ${name}.html`, render: `node engine/render.mjs ${name}.html`, sheet: `node engine/render.mjs ${name}.html --sheet` }, devDependencies: { playwright: '^1.49.0' } }, null, 2));
 if (!existsSync(join(out, '.gitignore'))) writeFileSync(join(out, '.gitignore'), 'node_modules/\nrenders/\n');
-console.log(`created ${target}\n  style: ${style}\n  next: cd ${dir} && npm install && npx playwright install chromium\n        node engine/render.mjs ${name}.html --sheet   (look at the frames)\n        node engine/render.mjs ${name}.html           (MP4s in renders/)`);
+console.log(`created ${target}\n  style: ${style}\n  next: cd ${dir} && npm install && npx playwright install chromium\n        node engine/check.mjs ${name}.html            (fix what it reports)\n        node engine/render.mjs ${name}.html --sheet   (look at the frames)\n        node engine/render.mjs ${name}.html           (MP4s in renders/)`);

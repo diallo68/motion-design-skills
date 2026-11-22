@@ -1,7 +1,7 @@
 <!doctype html>
-<!-- TEMPLATE website-launch · 14 s · landscape / story / square
-     Beats: 0-2.2 statement · 2.2-4 browser arrives, URL types, page loads · 4-9.6 the page scrolls, three chips name
-            what it offers, the cursor clicks the main button · 9.6-11.6 same site on a phone · 11.6-14 endcard with the URL.
+<!-- TEMPLATE website-launch · 15 s · landscape / story / square
+     Beats: 0-2.8 statement · 2.8-4.6 browser arrives, URL types, page loads · 4.6-10.2 the page scrolls, three chips name
+            what it offers, the cursor clicks the main button · 10.2-12.2 same site on a phone · 12.2-15 endcard with the URL.
      The page inside the browser is plain HTML here. With a live site, capture it with
      `node <skill>/scripts/capture.mjs https://site --out assets/site-desktop.png` and replace .site with
      <img src="assets/site-desktop.png">. Only show the top of a real site if lower parts show real people's data. -->
@@ -40,29 +40,29 @@
   .site.mobile h1 { font-size: 52px; } .site.mobile .hero { padding: 120px 28px 20px; } .site.mobile .img { margin: 20px 28px; height: 260px; } .site.mobile nav { padding: 70px 28px 0; position: absolute; }
 </style>
 </head>
-<body data-duration="14" data-formats="landscape,story,square">
+<body data-duration="15" data-formats="landscape,story,square">
   <div class="bg-dots"></div>
   <div class="bg-glow" style="width:900px;height:900px;left:-300px;top:-300px" data-loop="drift/10"></div>
 
   <!-- 1. Statement -->
-  <div class="top center" data-out="outUp@2.1/.4">
+  <div class="top center" data-out="outUp@2.7/.4">
     <div class="h1" data-words=".2,.1">Our new site <span class="grad">is live</span></div>
   </div>
 
   <!-- 2. Headline during the browser part -->
-  <div class="top center" data-show="2.2,9.6" style="top:200px">
-    <div class="h2" data-in="fadeUp@2.4">Everything in one place</div>
+  <div class="top center" data-show="2.8,10.2">
+    <div class="h2" data-in="fadeUp@3">Everything in one place</div>
   </div>
-  <style>body.landscape .top { top: 40px !important } body.landscape .top .h2, body.landscape .top .h1 { font-size: 64px } body.square .top { top: 80px !important }</style>
+  <style>body.landscape .top { top: 70px !important } body.landscape .top .h2, body.landscape .top .h1 { font-size: 64px } body.square .top { top: 80px !important }</style>
 
   <!-- 3. Browser -->
-  <div class="br-wrap" data-out="outScale@9.4/.5">
-    <div class="browser" data-in="fadeUp@2.2/.9">
-      <div class="bar"><span class="lights"><i></i><i></i><i></i></span><span class="url"><span data-type="2.9,12">northwind.studio</span></span></div>
-      <div class="progress" data-in="grow@4/.5" style="opacity:1"></div>
+  <div class="br-wrap" data-out="outScale@10/.5">
+    <div class="browser" data-in="fadeUp@2.8/.9">
+      <div class="bar"><span class="lights"><i></i><i></i><i></i></span><span class="url"><span data-type="3.5,12">northwind.studio</span></span></div>
+      <div class="progress" data-in="grow@4.6/.5" style="opacity:1"></div>
       <div class="view">
-        <div class="scroller" data-in="scrollPage@4.4/5" style="animation-timing-function:var(--ease-io)">
-          <div class="site" data-in="fadeIn@4.3/.3">
+        <div class="scroller" data-in="scrollPage@5/5" style="animation-timing-function:var(--ease-io)">
+          <div class="site" data-in="fadeIn@4.9/.3">
             <nav><b>Northwind</b><span>Work</span><span>Studio</span><span>Prices</span><span class="cta">Book a call</span></nav>
             <div class="hero"><h1>Interiors for small spaces</h1><p>We design flats and shops under 80 m², from the first sketch to the last shelf.</p><span class="go" id="go">See our work</span></div>
             <div class="img"></div>
@@ -72,20 +72,20 @@
         </div>
       </div>
     </div>
-    <div class="cursor" style="left:62%;top:78%" data-in="fadeIn@7.4/.3" data-out="fadeOut@9.1/.2"><span data-in="riseIn@7.4/.9" style="display:block">CURSOR</span></div>
-    <div class="tap" style="left:63%;top:80%" data-tap="8.5"></div>
+    <div class="cursor" style="left:62%;top:78%" data-in="fadeIn@8/.3" data-out="fadeOut@9.7/.2"><span data-in="riseIn@8/.9" style="display:block">CURSOR</span></div>
+    <div class="tap" style="left:63%;top:80%" data-tap="9.1"></div>
   </div>
 
   <script>window.CHIPS = [
-    { icon: 'sparkles', text: 'New portfolio', at: 4.8, side: 'left', top: 760 },
-    { icon: 'calendar', text: 'Book a call online', at: 6, side: 'right', top: 1060 },
-    { icon: 'card', text: 'Clear prices', at: 7.2, side: 'left', top: 1360 },
+    { icon: 'sparkles', text: 'New portfolio', at: 5.4, side: 'left', top: 620 },
+    { icon: 'calendar', text: 'Book a call online', at: 6.6, side: 'right', top: 860 },
+    { icon: 'card', text: 'Clear prices', at: 7.8, side: 'left', top: 1100 },
   ];</script>
 
   <!-- 4. Same site on a phone -->
-  <div class="top center" data-show="9.6,11.6"><div class="h2" data-in="fadeUp@9.7">And on your phone</div></div>
-  <div class="ph-wrap stage3d" data-show="9.6,11.6">
-    <div class="phone sm" data-in="phoneIn@9.6/1" data-loop="float/4">
+  <div class="top center" data-show="10.2,12.2"><div class="h2" data-in="fadeUp@10.3">And on your phone</div></div>
+  <div class="ph-wrap stage3d" data-show="10.2,12.2">
+    <div class="phone sm" data-in="phoneIn@10.2/1" data-loop="float/4">
       <div class="screen" style="--screen-bg:#fbfaf7">
         <div class="site mobile">
           <nav><b>Northwind</b></nav>
@@ -99,9 +99,9 @@
 <script src="engine/motion.js"></script>
 <script>
   document.querySelectorAll('.cursor > span').forEach((c) => c.innerHTML = icon('cursor'));
-  const dy = { landscape: -560, story: 0, square: -520 }[FORMAT];
-  chips(CHIPS.map((c) => ({ ...c, top: c.top + dy, inset: FORMAT === 'landscape' ? 90 : 40 })));
-  endcard({ at: 11.6, name: 'Northwind', tagline: 'Interiors for small spaces', cta: 'northwind.studio' });
+  const dy = { landscape: -420, story: 0, square: -380 }[FORMAT];
+  chips(CHIPS.map((c) => ({ ...c, top: c.top + dy, inset: { landscape: 90, square: 40 }[FORMAT] })));   // story: the helper keeps right-hand chips clear of the platform's buttons
+  endcard({ at: 12.2, name: 'Northwind', tagline: 'Interiors for small spaces', cta: 'northwind.studio' });
 </script>
 </body>
 </html>

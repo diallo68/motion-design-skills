@@ -1,7 +1,7 @@
 # Motion design skills
 
 An agent skill that makes **motion design videos** — app promos, website launch videos and social media ads —
-the way they look on Dribbble and Pinterest: kinetic type, phones floating in 3D, UI cards, benefit chips, cursor
+in the style common on Dribbble and Pinterest: kinetic type, phones floating in 3D, UI cards, benefit chips, cursor
 taps, rolling words, counters and end cards with store badges. Each video is an HTML page rendered frame by frame
 to MP4, in the formats the platforms want:
 
@@ -13,8 +13,8 @@ to MP4, in the formats the platforms want:
 | landscape | 1920×1080 | YouTube, websites, slides |
 
 Ask your agent something like *"make a 15-second launch video for my app for Instagram Reels"* or *"animate our
-new website for LinkedIn"*: it writes a storyboard, picks a style and the moves, builds the video, checks the
-frames on a contact sheet and renders the MP4s.
+new website for LinkedIn"*: it writes a storyboard, picks a style and the moves, builds the video, runs the
+quality check, looks at the frames on a contact sheet and renders the MP4s.
 
 ## Install
 
@@ -42,7 +42,8 @@ Playwright's Chromium once (`npm install && npx playwright install chromium`); t
 ```bash
 node skills/motion-video/scripts/init.mjs my-launch --template app-promo --style midnight-glow
 cd my-launch && npm install && npx playwright install chromium
-node engine/render.mjs video.html --sheet      # contact sheet of frames, to check the layout
+node engine/check.mjs video.html               # what a viewer would notice, each with its fix
+node engine/render.mjs video.html --sheet      # contact sheet of frames, to look at the layout
 node engine/render.mjs video.html              # MP4s in renders/
 ```
 
@@ -50,15 +51,25 @@ Open `video.html?format=feed&t=4` in a browser to look at any moment while you e
 
 ## What is inside
 
-- **3 templates** (working videos to start from): `app-promo` 15 s, `website-launch` 14 s, `social-ad` 10 s.
+- **3 templates** (working videos to start from, each passing the check): `app-promo` 15 s, `website-launch` 15 s,
+  `social-ad` 12 s.
 - **6 styles**: `midnight-glow`, `pastel-pop`, `bold-type`, `clean-light`, `neon-lime`, `warm-editorial`.
 - **18 moves** documented with markup in `skills/motion-video/references/moves.md`.
 - **An engine** of plain CSS keyframes and `data-` attributes (`data-in="fadeUp@1.2"`, `data-words`,
   `data-ticker`, `data-count`, `data-type`…), and a deterministic renderer (Playwright + ffmpeg).
+- **A quality check** (`check.mjs`) that plays the video and measures every line of text every 0.1 s in every
+  format: platform safe zones (Reels, TikTok, Shorts), text off the frame, cut, overlapping or covered, time to
+  read, contrast, letter size, crowding, end-card length, missing files.
 - **Helpers**: `capture.mjs` to capture a live site for the browser frame.
 
 Every frame is computed from time `t`, so renders are identical every time, at any frame rate, with no screen
 recording.
+
+## Where the moves come from
+
+The moves and timings are written from common patterns in public motion design work (Dribbble and Pinterest
+showcases of app promos and launch videos) and from platform guidance on safe zones and reading time. No video
+was copied or analysed frame by frame; the templates and styles are original.
 
 ## License
 

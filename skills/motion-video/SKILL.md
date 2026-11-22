@@ -85,16 +85,22 @@ full API; the essentials:
 - App screens: real screenshots (`<img class="shot">`) or HTML rebuilt from the real UI. Capture a live site with
   `node <skill>/scripts/capture.mjs <url> --out assets/site.png` (stop above sections showing real people).
 
-### 6. Look before you render
+### 6. Check, then look, before you render
 
 ```bash
-node engine/render.mjs video.html --sheet            # one frame per second, all declared formats, as one JPG
+node engine/check.mjs video.html                      # every format: errors and warnings, each with its fix
+node engine/render.mjs video.html --sheet             # one frame per second, all declared formats, as one JPG
 node engine/render.mjs video.html --still 4.2 --format feed
 ```
 
-Open every sheet and check, frame by frame: nothing overlaps or leaves the frame, text is readable at phone size,
-every beat has one clear focus, the end card is complete, nothing is blank. Fix and look again. This step is
-where most of the quality comes from; do not skip it to save time.
+`check` plays the video and measures every line of text every 0.1 s: text under the platform's buttons
+(`safe-zone`), off the frame or cut by its box, two texts overlapping, text covered by something opaque, lines not
+held long enough to read (0.5 s + 0.3 s a word; the last line 2 s), weak contrast, small letters, too many words at
+once, a short end card, missing files. Fix every error and run it again until it says `0 errors`; weigh each
+warning. Then open every sheet: `check` cannot judge whether a beat has one clear focus or looks good. This
+step is where most of the quality comes from; do not skip it to save time. Never silence a finding with
+`data-check` to make it pass: only real UI inside a device (`ui`), small print (`note`) or a designed overlap
+(`overlap`) gets one.
 
 ### 7. Render and deliver
 
@@ -115,7 +121,8 @@ product as if it were the client's.
 
 ## Files
 
-- `engine/` — `motion.css` (components, keyframes), `motion.js` (timing engine, helpers), `render.mjs` (renderer)
+- `engine/` — `motion.css` (components, keyframes), `motion.js` (timing engine, helpers), `check.mjs` (quality
+  check), `render.mjs` (renderer), `page.mjs` (shared by both)
 - `styles/` — six presets; `references/styles.md` says when to use which and how to brand one
 - `templates/` — `app-promo` (15 s), `website-launch` (14 s), `social-ad` (10 s); each is a working video
 - `references/moves.md` — the motion patterns with markup · `references/storyboard.md` — structure and timing ·
