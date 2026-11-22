@@ -1,5 +1,5 @@
 <!doctype html>
-<!-- TEMPLATE app-promo · 15 s · story / feed / square
+<!-- TEMPLATE app-promo · 15 s · story / feed / square / landscape (text left, phone right)
      Beats: 0-2.4 kinetic intro · 2.4-4.4 phone arrives · 4.4-9.9 three features inside the phone with chips, a
             punch-in on the streak · 9.9-10.5 the phone grows past the frame and becomes the next scene ·
             10.4-12.2 ticker line over a fan of screens · 12.2-15 endcard.
@@ -20,6 +20,12 @@
   .ph-wrap .phone { left: 0; top: 0; }
   /* the camera magnifies from the phone's top edge, so the phone never climbs over the headline */
   .cam { transform-origin: 50% 600px; } body.feed .cam { transform-origin: 50% 330px; } body.square .cam { transform-origin: 50% 250px; }
+  /* landscape: the headline on the left, the phone on the right */
+  body.landscape .ph-wrap { left: 1180px; margin-left: 0; top: 90px; transform: scale(.78); }
+  body.landscape .cam { transform-origin: 1398px 90px; }
+  body.landscape .top { right: 900px; top: 400px; text-align: left; }
+  body.landscape .fan { left: 1400px; top: 150px; transform: scale(.72); }
+  body.landscape .glow1 { left: 900px; top: 100px; }
   .glow1 { width: 900px; height: 900px; left: 90px; top: 700px; }
 
   /* app screens (HTML stand-ins) */
@@ -45,7 +51,7 @@
   .fan .phone { left: -210px; top: 0; }
 </style>
 </head>
-<body data-duration="15" data-formats="story,feed,square" class="grain">
+<body data-sfx="auto" data-duration="15" data-formats="story,feed,square,landscape" class="grain">
   <div class="bg-mesh" data-loop="drift/9"></div>
   <div class="bg-grid"></div>
 
@@ -122,8 +128,8 @@
   // put real icons in the placeholders written as words above
   document.querySelectorAll('.box').forEach((b) => b.innerHTML = b.innerHTML.replace('CHECK', icon('check')));
   document.querySelectorAll('.remind .ico').forEach((b) => b.innerHTML = icon('bell'));
-  const dy = { story: 0, feed: -400, square: -560 }[FORMAT];
-  chips(CHIPS.map((c) => ({ ...c, top: c.top + dy })));
+  const dy = { story: 0, feed: -400, square: -560, landscape: -240 }[FORMAT];
+  chips(CHIPS.map((c) => ({ ...c, top: c.top + dy, ...(FORMAT === 'landscape' ? { side: 'left', inset: 940 } : {}) })));
   endcard({ at: 12.2, name: 'Tempo', tagline: 'Small habits, every day.', stores: ['apple', 'google'], storeNote: 'Coming soon on', note: 'tempo.app' });
 </script>
 </body>
