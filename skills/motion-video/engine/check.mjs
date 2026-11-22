@@ -13,6 +13,7 @@
 // Opt-outs on any element: data-check="ignore" (never checked), "ui" (app or site UI inside a device: not read),
 // "note" (small print such as the disclaimer: no read-time, safe-zone or contrast rule), "overlap" (meant to overlap).
 import { options, loadPlaywright, serve, openFormat, pickFormats, SIZES } from './page.mjs';
+import { synthesize, DEFAULT_VOICE } from './voice.mjs';
 
 const args = process.argv.slice(2);
 const opt = options(args);
@@ -212,6 +213,19 @@ for (const format of formats) {
   for (const l of stat.loops) add('warning', 'moving-text', l, null, null, `Text on a ${l.loop} loop keeps moving after it lands.`, 'A landed line holds still; move the camera, the device or the ground instead (data-loop on a wrapper without text).');
   if (stat.sameEntrance) add('warning', 'same-entrance', null, null, null, `${stat.sameEntrance.n} of ${stat.sameEntrance.of} texts enter with ${stat.sameEntrance.name}.`, 'Vary entrances within a film: words one by one, a blur-in, a mask, a whip; see references/moves.md.');
   if (stat.taps) add('warning', 'tap-ring', null, null, null, `${stat.taps} tap ring${stat.taps > 1 ? 's' : ''}: rings read as a template.`, 'Show the tap by what it does: press the button (press keyframe) and let the screen answer, or cut on the tap.');
+  // voice-over: each line must finish before the next starts and before the video ends
+  const vo = await page.evaluate(() => window.voiceLines ? window.voiceLines() : { lines: [] });
+  if (vo.lines.length && opt('voice') !== 'off') {
+    try {
+      const said = await synthesize(vo.lines, { root: site.root, voice: (opt('voice') !== true && opt('voice')) || vo.voice || DEFAULT_VOICE, rate: vo.rate });
+      said.forEach((l, i) => {
+        const end = l.at + l.dur; const next = said[i + 1];
+        const who = { sel: 'voice', text: l.text };
+        if (next && end > next.at - 0.1) add('error', 'voice-overlap', who, l.at, end, `This line lasts ${l.dur.toFixed(1)} s and runs into the next one at ${fmtT(next.at)}.`, `Start the next line at ${fmtT(end + 0.2)} or later, cut words, or speed the voice (data-voice-rate="1.1").`);
+        if (end > D - 0.2) add('error', 'voice-late', who, l.at, end, `This line ends at ${fmtT(end)}, after the video (${fmtT(D)}).`, 'Start it earlier, cut words, or raise data-duration.');
+      });
+    } catch (e) { add('error', 'voice', null, null, null, e.message, 'See references/engine.md, Voice-over.'); }
+  }
   if (stat.endAt !== null && D - stat.endAt < 2.5) add('warning', 'end-card', { sel: '.endcard' }, stat.endAt, D, `The end card is on screen for ${(D - stat.endAt).toFixed(1)} s.`, 'Give the end card 2.5–3 s: start it earlier or raise data-duration.');
 
   // sample the whole video

@@ -23,7 +23,8 @@
 - **End card 2.8–3 s**: name, one line, one action (URL, "Download", store badges); the last line holds 2 s.
 
 ## Template
-Add a Sound column when the film has music or a sound that matters (the auto effects need no planning).
+Add a Sound column when the film has music or a sound that matters (the auto effects need no planning), and a
+Voice column for a voice-over: one short line per beat, about 2.5 words a second, never more than the beat holds.
 
 | Time | On screen | Words | Move |
 |---|---|---|---|

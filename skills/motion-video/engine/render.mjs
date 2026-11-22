@@ -9,6 +9,8 @@
 //   node render.mjs video.html --fps 60 --audio music.mp3 --out renders
 //   node render.mjs video.html --sfx off             no sound effects (they play when <body data-sfx="auto">
 //                                                    or elements carry data-sfx); --music-volume 0.55
+//   node render.mjs video.html --voice piper:fr_FR-upmc-medium#pierre   voice-over provider (default: the page's
+//                                                    <body data-voice>, else Piper siwis); --voice off for none
 //
 // Run `node check.mjs video.html` first: it finds what a contact sheet hides.
 // Needs Node 18+, `npm i playwright` (then `npx playwright install chromium`) and ffmpeg on the PATH.
@@ -17,6 +19,7 @@ import { mkdir, rm } from 'node:fs/promises';
 import { join, resolve } from 'node:path';
 import { SIZES, options, loadPlaywright, serve, openFormat, pickFormats } from './page.mjs';
 import { ensureSfx, mix } from './sound.mjs';
+import { synthesize, DEFAULT_VOICE } from './voice.mjs';
 
 const args = process.argv.slice(2);
 const opt = options(args);
@@ -63,13 +66,15 @@ for (const format of formats) {
     const frames = Math.round(duration * fps); const f = join(out, `${tag}.mp4`);
     const music = opt('audio'); const cues = opt('sfx') === 'off' ? [] : await page.evaluate(() => window.soundCues ? window.soundCues() : []);
     const ffArgs = ['-y', '-loglevel', 'error', '-f', 'image2pipe', '-framerate', String(fps), '-i', '-'];
+    const vo = opt('voice') === 'off' ? { lines: [] } : await page.evaluate(() => window.voiceLines ? window.voiceLines() : { lines: [] });
+    const voice = vo.lines.length ? await synthesize(vo.lines, { root: site.root, voice: (opt('voice') !== true && opt('voice')) || vo.voice || DEFAULT_VOICE, rate: vo.rate }) : [];
     let wav = null;
-    if (cues.length || (music && music !== true)) {
+    if (cues.length || voice.length || (music && music !== true)) {
       if (cues.length) ensureSfx();
       wav = join(out, `.${tag}-sound.wav`);
-      mix({ cues, root: site.root, duration, out: wav, music: music && music !== true ? resolve(music) : null, musicVolume: +opt('music-volume', 0.55) });
+      mix({ cues, voice, root: site.root, duration, out: wav, music: music && music !== true ? resolve(music) : null, musicVolume: +opt('music-volume', 0.55) });
       ffArgs.push('-i', wav, '-c:a', 'aac', '-b:a', '192k', '-shortest');
-      console.log(`sound: ${cues.length} effect${cues.length === 1 ? '' : 's'}${music && music !== true ? ' + music' : ''}`);
+      console.log(`sound: ${cues.length} effect${cues.length === 1 ? '' : 's'}${voice.length ? `, ${voice.length} voice line${voice.length === 1 ? '' : 's'}` : ''}${music && music !== true ? ' + music' : ''}`);
     }
     ffArgs.push('-c:v', 'libx264', '-preset', 'slow', '-crf', '18', '-pix_fmt', 'yuv420p', '-movflags', '+faststart', f);
     const ff = spawn('ffmpeg', ffArgs, { stdio: ['pipe', 'inherit', 'inherit'] });

@@ -64,6 +64,21 @@ path. `window.SFX = [{ at, sfx, gain }]` adds cues by script. Effects are synthe
 `engine/.sfx/` on first render, each peaking at -3 dB. `render.mjs --audio track.mp3 --music-volume 0.55` lays
 music under them; `--sfx off` renders silent.
 
+## Voice-over
+Lines: `data-vo="Bloqué sur un exercice ?"` on an element (said at its entrance, `data-vo-at="1.2"` to move it), or
+`window.VOICE = [{ at, text }, { at, file }]`. Voice: `<body data-voice="provider:voice">` or `--voice` on render
+and check (`--voice off` for none); speed `data-voice-rate`.
+
+| Provider | Example | Needs |
+|---|---|---|
+| Piper (default) | `piper:fr_FR-siwis-medium`, `piper:fr_FR-upmc-medium#pierre` | `scripts/voice-setup.mjs` once; free, offline |
+| Google Cloud TTS | `google:fr-FR-Neural2-A`, `google:fr-FR-Wavenet-B` | `GOOGLE_TTS_API_KEY` (an API key restricted to Text-to-Speech) |
+| Recorded | `{ at: 1.2, file: 'assets/voice/01.m4a' }` | a clean recording, one file per line |
+
+Lines are cached in `.voice/` by their text. The mix cleans the voice (high-pass, gentle compression), lowers the
+effects to 70 % and ducks the music about 11 dB while someone speaks. `check` reports `voice-overlap`,
+`voice-late` and `voice` (a provider error).
+
 ## Check (`node engine/check.mjs video.html`)
 Rules, each reported with a time range, the element and a fix: `safe-zone` (story: text inside x 60–960, y 270–1250,
 clear of the Reels/TikTok/Shorts buttons and caption; other formats: a 5 % margin), `off-frame`, `cut-off`,
