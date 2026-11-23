@@ -60,6 +60,14 @@ and structure (hook in the first 1.5 s, one idea per beat, 6–8 words of on-scr
 - **Transitions with a cause**: join the beats through something on screen, 2 to 4 kinds per film (moves 19–25):
   a punch-in on the part of the screen the line names, the phone growing into the next scene, the next scene
   opening from the button pressed, a whip between two lines. Write each one in the storyboard's Move column.
+- **Shops and catalogues: the products are the film.** For e-commerce, marketplaces and delivery, a phone with
+  a title and chips undersells the catalogue: start from a template that puts the real products forward, and when
+  making several videos, give each a different genre rather than one recipe in several formats. `collage` (product
+  photos slapped on paper with price tags and marker scribbles), `map-story` (the area draws itself, towns light up
+  with their real counts; `scripts/geo-outline.mjs` turns a GeoJSON country or region into its outline and places),
+  `parcel-3d` (a parcel drops, opens, the products burst out in 3D), `grid-montage` (a grid of cells cutting on the
+  beat between photos, prices and places). Kinetic type and feed-style films suit brands and services better than
+  catalogues.
 - **3D** when the brief asks for it or the product reads best as objects in a small world (isometric app scenes,
   a delivery route, a process): `engine/scene3d.js` and `references/3d.md`; the `iso-promo` template is a working
   isometric promo. One continuous shot, objects entering one by one, the real app screens on a 3D phone.
@@ -69,7 +77,7 @@ and structure (hook in the first 1.5 s, one idea per beat, 6–8 words of on-scr
 ### 4. Start the project
 
 ```bash
-node <skill>/scripts/init.mjs <folder> --template app-promo|website-launch|social-ad|iso-promo --style <preset> [--name video]
+node <skill>/scripts/init.mjs <folder> --template app-promo|website-launch|social-ad|iso-promo|collage|map-story|parcel-3d|grid-montage --style <preset> [--name video]
 cd <folder> && npm install && npx playwright install chromium
 ```
 
@@ -162,7 +170,7 @@ screens, stand-in numbers, the music).
 ## Network access (disclosed)
 
 Rendering, checking and the sound effects run locally. The skill reaches the network only for:
-- **Fonts**: style presets `@import` Google Fonts (fonts.googleapis.com) when a page renders.
+- **Fonts**: style presets (and the `collage` template's marker font) load Google Fonts (fonts.googleapis.com) when a page renders.
 - **Live pages**: `scripts/capture.mjs` opens the URL the user gives, to capture it.
 - **Voice setup, once**: `scripts/voice-setup.mjs` installs Piper or Kokoro with uv/pipx and downloads their
   model files (huggingface.co/rhasspy, github.com/thewh1teagle/kokoro-onnx).
@@ -177,7 +185,9 @@ No credentials are read or sent except the keys the user sets for those services
 
 Show only true claims. Numbers, ratings, reviews, user counts and press logos come from the user; if the video
 needs illustrative data on app screens, keep it plausible and add the small `.disclaimer` line ("Screens are
-illustrative"). Say "Coming soon" on store badges until the app is live. Never use another company's logo or
+illustrative"). Say "Coming soon" on store badges until the app is live. Products, prices and places in a
+shop's video are its real listings (with the seller's agreement for a marketplace), and a map's counts are real
+and dated: replace every stand-in before rendering for posting. Never use another company's logo or
 product as if it were the client's.
 
 ## Files
@@ -185,10 +195,12 @@ product as if it were the client's.
 - `engine/` — `motion.css` (components, keyframes), `motion.js` (timing engine, helpers, sound cues), `check.mjs`
   (quality check), `render.mjs` (renderer), `sound.mjs` (effects and mix), `page.mjs` (shared)
 - `styles/` — six presets; `references/styles.md` says when to use which and how to brand one
-- `templates/` — `app-promo` (15 s), `website-launch` (15 s), `social-ad` (12 s), `iso-promo` (12 s, 3D); each is a
-  working video that passes `check` in all four formats
+- `templates/` — `app-promo` (15 s), `website-launch` (15 s), `social-ad` (12 s), `iso-promo` (12 s, 3D); for products:
+  `collage` (16 s), `map-story` (16.4 s), `parcel-3d` (14.4 s, 3D), `grid-montage` (13.4 s). Each is a working video
+  that passes `check` in all four formats; the product ones draw stand-in images until `PRODUCTS` gets real photos
 - `engine/scene3d.js` and `references/3d.md` — 3D scenes (isometric or perspective) on the video's clock
 - `references/moves.md` — the motion patterns with markup · `references/storyboard.md` — structure and timing ·
   `references/engine.md` — every attribute, helper and keyframe · `references/troubleshooting.md`
 - `scripts/init.mjs` — new project · `scripts/capture-app.mjs` — capture the running app (Android, iOS simulator)
-  · `scripts/capture.mjs` — capture a live web page
+  · `scripts/capture.mjs` — capture a live web page · `scripts/geo-outline.mjs` — a GeoJSON area and its places as
+  the outline and points of `map-story` (offline)

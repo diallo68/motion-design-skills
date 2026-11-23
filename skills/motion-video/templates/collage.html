@@ -1,0 +1,89 @@
+<!doctype html>
+<!-- TEMPLATE collage · 16 s · story / feed / square / landscape — paper and stickers, for shops and marketplaces:
+     the products themselves are the film. Photos slapped on kraft paper with tape, a price tag on each, marker
+     titles and scribbles drawn by hand, stop-motion timing (each sticker lands a few frames after the last).
+     Beats: 0-5.6 hook + three products · 5.7-11 the promise + three more · 11-13.3 the question and the stamp
+            (the action) · 13.3-16 end card.
+     Replace PRODUCTS with the client's real photos (square crops, product only, no people): img, price, place.
+     Stand-in images are drawn until then. -->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Collage</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Permanent+Marker&display=swap">
+<link rel="stylesheet" href="engine/motion.css">
+<link rel="stylesheet" href="style.css">
+<style>
+  /* the paper has its own palette: --marker is the brand colour for the marker words, the tags and the stamp; keep it
+     dark enough to read on kraft (the check measures it) */
+  body { background: #EADBC4; color: #1A1A2E; --marker: #C2410C; --end-bg: #1A1A2E; --end-ink: #fff; }
+  .paper { position: absolute; inset: 0; background:
+      radial-gradient(circle at 20% 30%, rgba(255,255,255,.35), transparent 40%),
+      radial-gradient(circle at 80% 70%, rgba(120,80,30,.12), transparent 45%),
+      repeating-linear-gradient(0deg, rgba(120,90,50,.035) 0 2px, transparent 2px 6px); }
+  .title { position: absolute; left: 80px; right: 200px; top: 300px; z-index: 10; font: 400 112px/1 "Permanent Marker", cursive; color: #1A1A2E; transform: rotate(var(--r)); }
+  .title .o { color: var(--marker); }
+  body.feed .title { top: 130px; font-size: 92px; } body.square .title { top: 104px; font-size: 76px; right: 90px; }
+  body.landscape .title { left: 110px; right: 1160px; top: 330px; font-size: 96px; }
+  .stk { position: absolute; width: var(--s); padding: 16px 16px 22px; background: #fff; border-radius: 10px; box-shadow: 0 18px 30px rgba(70,40,10,.28); z-index: 5; }
+  .stk img { display: block; width: 100%; aspect-ratio: 1; object-fit: cover; border-radius: 4px; }
+  .tape { position: absolute; top: -26px; left: 50%; width: 150px; height: 46px; margin-left: -75px; background: rgba(255,240,200,.75); transform: rotate(-4deg); box-shadow: 0 2px 4px rgba(0,0,0,.08); }
+  .tag { position: absolute; z-index: 7; background: var(--marker); color: #fff; font: 900 50px/1 var(--font); letter-spacing: -.02em; padding: 16px 22px 16px 46px; border-radius: 10px 18px 18px 10px; clip-path: polygon(22px 0, 100% 0, 100% 100%, 22px 100%, 0 50%); box-shadow: 0 10px 20px rgba(0,0,0,.25); }
+  .tag::before { content: ""; position: absolute; left: 20px; top: 50%; width: 14px; height: 14px; margin-top: -7px; border-radius: 50%; background: #EADBC4; }
+  .tag small { display: block; font: 700 36px/1.2 var(--font); margin-top: 6px; opacity: .95; }
+  body.square .tag { font-size: 40px; padding: 12px 18px 12px 42px; } body.square .tag small { font-size: 36px; }
+  @keyframes slap { 0% { opacity: 0; transform: scale(1.5) rotate(calc(var(--r) * 3)) } 55% { opacity: 1; transform: scale(.94) rotate(var(--r)) } 75% { transform: scale(1.03) rotate(var(--r)) } 100% { opacity: 1; transform: scale(1) rotate(var(--r)) } }
+  @keyframes peel { to { opacity: 0; transform: translate(-120px, -60px) rotate(-20deg) scale(.9) } }
+  svg.scribble { position: absolute; z-index: 8; overflow: visible; }
+  svg.scribble path { fill: none; stroke: #1A1A2E; stroke-width: 9; stroke-linecap: round; stroke-linejoin: round; stroke-dasharray: 1200; stroke-dashoffset: 1200; }
+  @keyframes draw { to { stroke-dashoffset: 0 } }
+  .stamp { position: absolute; left: 90px; right: 170px; top: 760px; z-index: 9; text-align: center; border: 10px solid var(--marker); color: var(--marker); border-radius: 26px; padding: 30px 20px; font: 900 76px/1.05 var(--font); letter-spacing: -.03em; transform: rotate(-4deg); background: rgba(255,250,240,.75); }
+  body.feed .stamp { top: 560px; } body.square .stamp { top: 400px; font-size: 64px; left: 120px; right: 120px; }
+  body.landscape .stamp { left: 1000px; right: 140px; top: 420px; }
+  @keyframes stampIn { 0% { opacity: 0; transform: scale(2.2) rotate(-10deg) } 60% { opacity: 1; transform: scale(.95) rotate(-4deg) } 100% { opacity: 1; transform: scale(1) rotate(-4deg) } }
+</style>
+</head>
+<body data-sfx="auto" data-duration="16" data-formats="story,feed,square,landscape">
+  <div class="paper"></div>
+
+  <div class="title" style="--r:-3deg" data-show="0,5.6" data-in="slap@.1/.45" data-out="peel@5.4/.3">Found on <span class="o">Stallo</span></div>
+  <div class="title" style="--r:2deg" data-show="5.7,11" data-in="slap@5.75/.45" data-out="peel@10.8/.3">All of it. <span class="o">Fair prices.</span></div>
+  <div id="board"></div>
+  <div class="title" style="--r:-2deg" data-show="11,13.3" data-in="slap@11.05/.4">What are <span class="o">you after?</span></div>
+  <div class="stamp" data-show="11.6,13.3" data-in="stampIn@11.7/.35">Just ask<br>stallo.app</div>
+
+<script>
+  // The client's real products: img (square photo in assets/), price, place. Without img a stand-in is drawn.
+  const PRODUCTS = [
+    { name: 'Sneakers', price: '$89', place: 'Calden', hue: 18 }, { name: 'Headphones', price: '$59', place: 'Mereth', hue: 210 },
+    { name: 'Lamp', price: '$35', place: 'Calden', hue: 45 }, { name: 'Watch', price: '$120', place: 'Port Ula', hue: 160 },
+    { name: 'Backpack', price: '$45', place: 'Ashby', hue: 280 }, { name: 'Camera', price: '$310', place: 'Calden', hue: 340 },
+  ];
+  const standIn = (p, i) => 'data:image/svg+xml,' + encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" width="600" height="600"><defs><linearGradient id="g" x2="1" y2="1"><stop offset="0" stop-color="hsl(${p.hue} 70% 90%)"/><stop offset="1" stop-color="hsl(${p.hue} 55% 72%)"/></linearGradient></defs><rect width="600" height="600" fill="url(#g)"/>${['<circle cx="300" cy="340" r="150"', '<rect x="160" y="200" width="280" height="280" rx="60"', '<path d="M300 180 L460 480 L140 480 Z"'][i % 3]} fill="hsl(${p.hue} 65% 50%)"/><text x="300" y="110" text-anchor="middle" font-family="system-ui,sans-serif" font-weight="800" font-size="64" fill="hsl(${p.hue} 50% 20%)">${p.name}</text></svg>`);
+  const photo = (p, i) => p.img || standIn(p, i);
+
+  // three slots per wave, per format: [x, y] of each sticker, and the sticker's width
+  const F = new URLSearchParams(location.search).get('format') || document.body.dataset.format || 'story';
+  const L = { story: { s: 400, at: [[60, 580], [560, 540], [290, 860]] }, feed: { s: 300, at: [[80, 420], [560, 400], [320, 700]] },
+    square: { s: 240, at: [[90, 300], [620, 290], [360, 560]] }, landscape: { s: 330, at: [[900, 160], [1400, 140], [1150, 520]] } }[F];
+  const waves = [[1.2, 5.4], [6.2, 10.8]];   // each wave: first sticker lands, all peel off
+  let h = '';
+  PRODUCTS.forEach((p, i) => {
+    const [x, y] = L.at[i % 3], [at0, out] = waves[Math.floor(i / 3)], at = at0 + (i % 3) * .7, r = [-6, 5, 4, -5, 3, -3][i];
+    h += `<div class="stk" data-check="ui" style="--s:${L.s}px;left:${x}px;top:${y}px;--r:${r}deg" data-show="${at},${out + .3}" data-in="slap@${at}/.4" data-out="peel@${out}/.3"><div class="tape"></div><img src="${photo(p, i)}" alt=""></div>`;
+    h += `<div class="tag" style="left:${x + L.s * .42}px;top:${y + L.s * .64}px;transform:rotate(${-r}deg)" data-show="${at + .35},${out + .3}" data-in="pop@${at + .35}/.3" data-out="fadeOut@${out}/.2">${p.price}<small>${p.place}</small></div>`;
+  });
+  // marker scribbles: an arrow onto the last sticker of the first wave, a line under the second wave
+  const [ax, ay] = L.at[2], [ux, uy] = L.at[0];
+  h += `<svg class="scribble" data-check="ui" style="left:${ax + L.s * .4}px;top:${ay - 70}px;width:200px;height:120px" data-show="3.2,5.6"><path data-in="draw@3.2/.5:move" d="M180 10 C 130 0, 60 20, 20 90 M20 50 L20 90 L60 84"/></svg>`;
+  h += `<svg class="scribble" data-check="ui" style="left:${ux}px;top:${ay + L.s * 1.18}px;width:${L.at[1][0] + L.s - ux}px;height:60px" data-show="8.3,10.9"><path data-in="draw@8.3/.6:move" d="M10 30 C 200 50, 400 10, 600 35 S 820 30, 860 25" transform="scale(${(L.at[1][0] + L.s - ux) / 880} 1)"/></svg>`;
+  document.getElementById('board').innerHTML = h;
+  // a soft thud as each sticker lands, a pop for its tag, a hard one for the stamp
+  window.SFX = PRODUCTS.flatMap((p, i) => { const at = waves[Math.floor(i / 3)][0] + (i % 3) * .7; return [{ at, sfx: 'thud', gain: .55 }, { at: at + .35, sfx: 'pop', gain: .35 }]; }).concat([{ at: 11.7, sfx: 'thud', gain: .9 }]);
+</script>
+<script src="engine/motion.js"></script>
+<script>
+  endcard({ at: 13.3, name: 'Stallo', tagline: 'Buy and sell near you.', cta: 'stallo.app', stores: ['apple', 'google'] });
+</script>
+</body>
+</html>
