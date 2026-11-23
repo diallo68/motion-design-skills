@@ -99,7 +99,8 @@ clear of the Reels/TikTok/Shorts buttons and caption; other formats: a 5 % margi
 
 `data-check` on an element (inherited by its children): `ignore` never checked · `ui` app or site UI that is not
 read as a line (`.phone` and `.browser` content is treated so already) · `note` small print such as
-`.disclaimer` and store-badge captions · `overlap` a designed overlap.
+`.disclaimer` and store-badge captions · `overlap` a designed overlap. · `beat` a one- or two-word line cut on the rhythm
+(kinetic type), allowed to hold 0.4 s.
 
 ## Rules that keep frames exact
 - Everything that moves must be a CSS animation or computed in `seek`/`onSeek` from `t`. No `setTimeout`,
