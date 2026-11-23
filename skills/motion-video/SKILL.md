@@ -60,13 +60,16 @@ and structure (hook in the first 1.5 s, one idea per beat, 6–8 words of on-scr
 - **Transitions with a cause**: join the beats through something on screen, 2 to 4 kinds per film (moves 19–25):
   a punch-in on the part of the screen the line names, the phone growing into the next scene, the next scene
   opening from the button pressed, a whip between two lines. Write each one in the storyboard's Move column.
+- **3D** when the brief asks for it or the product reads best as objects in a small world (isometric app scenes,
+  a delivery route, a process): `engine/scene3d.js` and `references/3d.md`; the `iso-promo` template is a working
+  isometric promo. One continuous shot, objects entering one by one, the real app screens on a 3D phone.
 - **Timing**: eases by role, exits half the entrance, a landed line holds still, entrances varied (moves.md,
   Timing). Floating loops and tap rings are options, not defaults: show the UI acting and the press answering.
 
 ### 4. Start the project
 
 ```bash
-node <skill>/scripts/init.mjs <folder> --template app-promo|website-launch|social-ad --style <preset> [--name video]
+node <skill>/scripts/init.mjs <folder> --template app-promo|website-launch|social-ad|iso-promo --style <preset> [--name video]
 cd <folder> && npm install && npx playwright install chromium
 ```
 
@@ -165,7 +168,9 @@ product as if it were the client's.
 - `engine/` — `motion.css` (components, keyframes), `motion.js` (timing engine, helpers, sound cues), `check.mjs`
   (quality check), `render.mjs` (renderer), `sound.mjs` (effects and mix), `page.mjs` (shared)
 - `styles/` — six presets; `references/styles.md` says when to use which and how to brand one
-- `templates/` — `app-promo` (15 s), `website-launch` (14 s), `social-ad` (10 s); each is a working video
+- `templates/` — `app-promo` (15 s), `website-launch` (15 s), `social-ad` (12 s), `iso-promo` (12 s, 3D); each is a
+  working video that passes `check` in all four formats
+- `engine/scene3d.js` and `references/3d.md` — 3D scenes (isometric or perspective) on the video's clock
 - `references/moves.md` — the motion patterns with markup · `references/storyboard.md` — structure and timing ·
   `references/engine.md` — every attribute, helper and keyframe · `references/troubleshooting.md`
 - `scripts/init.mjs` — new project · `scripts/capture-app.mjs` — capture the running app (Android, iOS simulator)

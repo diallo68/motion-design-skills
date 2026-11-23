@@ -62,7 +62,7 @@ never its key content. Icons: `references/engine.md`.
 
 ### 8. Cursor and press
 ```html
-<div class="cursor" style="left:62%;top:78%" data-in="fadeIn@7.4/.3"><span data-in="riseIn@7.4/.9" style="display:block">…icon('cursor')…</span></div>
+<div class="cursor" data-point="#go@9.05" data-in="fadeIn@8.3/.3"><span data-in="riseIn@7.4/.9" style="display:block">…icon('cursor')…</span></div>
 <span class="go" id="go" data-in="press@9.05/.3">See our work</span>
 ```
 The pressed thing answers: it presses (`press`), then a checkbox fills or the next scene opens from it (21).

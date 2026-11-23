@@ -16,6 +16,7 @@
 //   data-cam="2/.6 1.8 0 -240; 4/.5 1 0 0"  camera on a wrapper: at/duration scale x y [ease], states in order
 //   data-become="9.9/.6"          the element grows past the frame (its fill becomes the next scene)
 //   data-from="#button"           a .flood or iris starts from the centre of that element (at its data-in time)
+//   data-point="#button@9.05"     the element (a cursor) is placed on that element's centre as it is at 9.05 s
 //   data-vo="Bloqué ?"            a voice-over line said when the element enters (data-vo-at="1.2" to move it);
 //                                 window.VOICE = [{ at, text } | { at, file }]; <body data-voice="piper:fr_FR-siwis-medium">
 //   <body data-sfx="auto">        sound effects on the visible actions (render.mjs mixes them); data-sfx="pop" on an
@@ -158,6 +159,11 @@
       const r = src.getBoundingClientRect(), b = el.getBoundingClientRect();
       el.style.setProperty('--x', `${((r.left + r.width / 2 - b.left) / b.width) * 100}%`);
       el.style.setProperty('--y', `${((r.top + r.height / 2 - b.top) / b.height) * 100}%`);
+    } }); });
+    document.querySelectorAll('[data-point]').forEach((el) => { const [sel, at] = el.dataset.point.split('@'); jobs.push({ at: +at || 0, run: () => {
+      const src = document.querySelector(sel); const box = el.offsetParent || document.body; if (!src) return;
+      const r = src.getBoundingClientRect(), b = box.getBoundingClientRect(); const sx = b.width / (box.offsetWidth || b.width), sy = b.height / (box.offsetHeight || b.height);
+      el.style.left = `${(r.left + r.width / 2 - b.left) / sx}px`; el.style.top = `${(r.top + r.height / 2 - b.top) / sy}px`;
     } }); });
     for (const j of jobs.sort((x, y) => x.at - y.at)) { apply(j.at + 0.001); j.run(); }
   }

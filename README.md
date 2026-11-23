@@ -52,8 +52,8 @@ Open `video.html?format=feed&t=4` in a browser to look at any moment while you e
 
 ## What is inside
 
-- **3 templates** (working videos to start from, each passing the check): `app-promo` 15 s, `website-launch` 15 s,
-  `social-ad` 12 s.
+- **4 templates** (working videos to start from, each passing the check): `app-promo` 15 s, `website-launch` 15 s,
+  `social-ad` 12 s, `iso-promo` 12 s (3D).
 - **6 styles**: `midnight-glow`, `pastel-pop`, `bold-type`, `clean-light`, `neon-lime`, `warm-editorial`.
 - **25 moves** documented with markup in `skills/motion-video/references/moves.md`, including transitions with a
   cause (punch-in camera, object becomes the world, iris from the tap, colour flood, whip) and eases by role.
@@ -69,6 +69,8 @@ Open `video.html?format=feed&t=4` in a browser to look at any moment while you e
   chime…), music of your own mixed under them.
 - **Voice-over**: Piper (free, offline), Google Cloud Text-to-Speech or a recorded voice; each line timed by the
   check, the music ducking under it.
+- **3D**: isometric or perspective scenes with Three.js (a phone showing the real app, cards, coins, books,
+  extruded logos…), objects entering one by one, the camera turning, on the same clock and checks as the rest.
 - **4 formats from one page**: story, feed, square and landscape, each template laid out and checked in all four.
 
 Every frame is computed from time `t`, so renders are identical every time, at any frame rate, with no screen
