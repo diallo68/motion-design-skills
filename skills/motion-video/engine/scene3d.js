@@ -258,7 +258,8 @@ export async function stage(opts = {}) {
         else camera.zoom = zoom;
         camera.updateProjectionMatrix();
       }
-      renderer.render(scene, camera);
+      // a stage inside a hidden scene (data-show) is not drawn: mixed 2D/3D films render fast
+      if (canvas.offsetParent !== null || getComputedStyle(canvas).position === 'fixed') renderer.render(scene, camera);
     },
   };
   return s;
