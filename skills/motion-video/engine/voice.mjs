@@ -3,6 +3,7 @@
 // Providers, set by <body data-voice="…"> or render/check --voice "…":
 //   piper:fr_FR-siwis-medium          free and offline (default). A speaker: piper:fr_FR-upmc-medium#pierre
 //   google:fr-FR-Neural2-A            Google Cloud Text-to-Speech; needs GOOGLE_TTS_API_KEY in the environment
+//   kokoro:ff_siwis                   Kokoro, natural and offline (French: ff_siwis; English: af_heart, bm_george…)
 //   chatterbox:fr                     Chatterbox Multilingual (natural, 23 languages) through Hugging Face;
 //   chatterbox:fr@assets/voice/ref.wav  … speaking with the voice of a 10-30 s recording (consent required)
 //   (any line with a file)            a recorded voice: window.VOICE = [{ at: 1.2, file: 'assets/voice/01.m4a' }]
@@ -17,6 +18,16 @@ import { fileURLToPath } from 'node:url';
 export const PIPER_DIR = process.env.PIPER_VOICES || join(homedir(), '.cache', 'motion-video', 'piper');
 export const DEFAULT_VOICE = 'piper:fr_FR-siwis-medium';
 export const CHATTERBOX_PY = process.env.CHATTERBOX_PYTHON || join(homedir(), '.cache', 'motion-video', 'chatterbox-venv', 'bin', 'python');
+
+// Kokoro: runs here (kokoro-onnx), spec is a voice name such as ff_siwis or af_heart
+function kokoro(text, voice, rate, out) {
+  if (!existsSync(CHATTERBOX_PY) || !existsSync(join(homedir(), '.cache', 'motion-video', 'kokoro', 'kokoro-v1.0.onnx'))) throw new Error('Kokoro is not set up: run `node <skill>/scripts/voice-setup.mjs --kokoro` once.');
+  const tmp = `${out}.part.wav`;
+  const r = spawnSync(CHATTERBOX_PY, [join(dirname(fileURLToPath(import.meta.url)), 'kokoro.py'), JSON.stringify({ text, voice: voice || 'ff_siwis', speed: rate, out: tmp })], { encoding: 'utf8', timeout: 300000 });
+  if (r.status || !existsSync(tmp)) { spawnSync('rm', ['-f', tmp]); throw new Error(`Kokoro failed: ${(r.stderr || '').trim().split('\n').pop()}`); }
+  spawnSync('ffmpeg', ['-y', '-loglevel', 'error', '-i', tmp, '-af', 'silenceremove=start_periods=1:start_threshold=-45dB,areverse,silenceremove=start_periods=1:start_threshold=-45dB,areverse,apad=pad_dur=0.08', '-ar', '48000', out]);
+  spawnSync('rm', ['-f', tmp]);
+}
 
 // Chatterbox: the model runs on Hugging Face (any machine works); spec "fr" or "fr@path/to/reference.wav"
 function chatterbox(text, spec, rate, out, root, opts = {}) {
@@ -99,7 +110,8 @@ export async function synthesize(lines, { root, voice = DEFAULT_VOICE, rate = 1 
       if (provider === 'piper') piper(l.text, spec, r, f);
       else if (provider === 'google') await google(l.text, spec, r, f);
       else if (provider === 'chatterbox') chatterbox(l.text, spec, r, f, root, l);
-      else throw new Error(`unknown voice provider "${provider}" (piper, google or chatterbox)`);
+      else if (provider === 'kokoro') kokoro(l.text, spec, r, f);
+      else throw new Error(`unknown voice provider "${provider}" (piper, kokoro, google or chatterbox)`);
     }
     out.push({ at: l.at, file: f, dur: duration(f), text: l.text });
   }

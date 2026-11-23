@@ -3,6 +3,7 @@
 //   node voice-setup.mjs                         install Piper and the two default French voices
 //   node voice-setup.mjs en_US-lessac-medium     add any voice from https://huggingface.co/rhasspy/piper-voices
 //   node voice-setup.mjs --chatterbox            set up Chatterbox (natural voices, voice from a reference recording)
+//   node voice-setup.mjs --kokoro                set up Kokoro (natural voices, offline, no account)
 //
 // Piper is installed as a command-line tool with uv (`uv tool install piper-tts`) or pipx; voices go to
 // ~/.cache/motion-video/piper (PIPER_VOICES to change it). Each voice has its own licence: read its MODEL_CARD.
@@ -15,6 +16,19 @@ const engine = join(dirname(fileURLToPath(import.meta.url)), '..', 'engine', 'vo
 const { PIPER_DIR, piperBin, piperPython } = await import(engine);
 const has = (c) => spawnSync('sh', ['-c', 'command -v "$0"', c]).status === 0;
 const run = (c, a) => { console.log(`$ ${c} ${a.join(' ')}`); return spawnSync(c, a, { stdio: 'inherit' }).status === 0; };
+
+// Kokoro (natural, offline): kokoro-onnx in the same small venv, and its two model files (about 350 MB)
+if (process.argv.includes('--kokoro')) {
+  const { CHATTERBOX_PY } = await import(engine);
+  const venv = dirname(dirname(CHATTERBOX_PY)); const dir = join(dirname(venv), 'kokoro');
+  if (!existsSync(CHATTERBOX_PY) && !(has('uv') ? run('uv', ['venv', '--python', '3.11', venv]) : run('python3', ['-m', 'venv', venv]))) process.exit(1);
+  if (!(has('uv') ? run('uv', ['pip', 'install', '--python', CHATTERBOX_PY, 'kokoro-onnx', 'soundfile']) : run(CHATTERBOX_PY, ['-m', 'pip', 'install', 'kokoro-onnx', 'soundfile']))) process.exit(1);
+  mkdirSync(dir, { recursive: true });
+  for (const f of ['kokoro-v1.0.onnx', 'voices-v1.0.bin']) if (!existsSync(join(dir, f))) run('curl', ['-L', '--fail', '-o', join(dir, f), `https://github.com/thewh1teagle/kokoro-onnx/releases/download/model-files-v1.0/${f}`]);
+  console.log(`✓ Kokoro in ${dir}. Use <body data-voice="kokoro:ff_siwis"> (French) or kokoro:af_heart, kokoro:bm_george (English).`);
+  console.log('Kokoro model: Apache 2.0 (hexgrad/Kokoro-82M).');
+  process.exit(0);
+}
 
 // Chatterbox (natural voices, voice from a reference recording): a small Python client for its Hugging Face Space
 if (process.argv.includes('--chatterbox')) {

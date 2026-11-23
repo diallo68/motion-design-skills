@@ -76,6 +76,7 @@ and check (`--voice off` for none); speed `data-voice-rate`.
 |---|---|---|
 | Piper (default) | `piper:fr_FR-siwis-medium`, `piper:fr_FR-upmc-medium#pierre` | `scripts/voice-setup.mjs` once; free, offline |
 | Google Cloud TTS | `google:fr-FR-Neural2-A`, `google:fr-FR-Wavenet-B` | `GOOGLE_TTS_API_KEY` (an API key restricted to Text-to-Speech) |
+| Kokoro (natural, offline) | `kokoro:ff_siwis` (French), `kokoro:af_heart`, `kokoro:bm_george` (English) | `scripts/voice-setup.mjs --kokoro` once; no account, no network |
 | Chatterbox (most natural) | `chatterbox:fr`, `chatterbox:fr@assets/voice/ref.wav` | `scripts/voice-setup.mjs --chatterbox` once; runs on Hugging Face (any machine); `HF_TOKEN` for quota |
 | Recorded | `{ at: 1.2, file: 'assets/voice/01.m4a' }` | a clean recording, one file per line |
 

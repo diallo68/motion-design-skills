@@ -10,6 +10,7 @@
 | A capture sits under the phone's notch | put `<div class="statusbar">` before the `<img class="shot">`, or capture with `--keep-status` |
 | The render has no sound | the page needs `<body data-sfx="auto">`, `data-sfx` on elements or `--audio`; check `--sfx off` is not set |
 | An effect is too loud or doubled | set `data-sfx="none"` on that element, or `data-sfx="tap@t:0.2"` for a quieter one |
+| `Kokoro is not set up` | run `node <skill>/scripts/voice-setup.mjs --kokoro` (about 350 MB of model files) |
 | `Piper is not installed` / `Voice … is not downloaded` | run `node <skill>/scripts/voice-setup.mjs` (it installs Piper with uv and the French voices) |
 | `GOOGLE_TTS_API_KEY is not set` | create an API key restricted to the Text-to-Speech API in Google Cloud, `export GOOGLE_TTS_API_KEY=…` in your shell profile |
 | `Chatterbox failed: … ZeroGPU runs limit` | the free quota is used up. Anonymous: a few lines; with a free account (`HF_TOKEN`): a few lines a day, renewed daily; Hugging Face PRO: about 40 GPU minutes a day. Finished lines are cached, so run again the next day and only the missing lines are made, or use Kokoro or Piper meanwhile |

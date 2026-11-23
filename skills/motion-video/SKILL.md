@@ -141,7 +141,8 @@ node engine/render.mjs video.html --sfx off           # silent
   project). They are synthesised by the engine, so they carry no licence. Sound only what moves on screen; a
   film where everything clicks sounds cheap.
 - **Voice-over** (optional): write the lines in the storyboard, then put them on the page, `data-vo="…"` on the
-  element they go with (said when it enters) or `window.VOICE = [{ at, text }]`. Voices: Chatterbox, the most natural
+  element they go with (said when it enters) or `window.VOICE = [{ at, text }]`. Voices: Kokoro, natural, free and
+  offline (`voice-setup.mjs --kokoro` once; `kokoro:ff_siwis` in French, `kokoro:af_heart` in English); Chatterbox, the most natural
   (`voice-setup.mjs --chatterbox` once; `chatterbox:fr`, or `chatterbox:fr@assets/voice/ref.wav` to speak with
   the voice of a person who agreed, from a 10-30 s recording); Piper, free and offline
   (`node <skill>/scripts/voice-setup.mjs` once; `<body data-voice="piper:fr_FR-siwis-medium">`, a woman, or
