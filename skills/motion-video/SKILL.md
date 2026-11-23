@@ -159,6 +159,20 @@ node engine/render.mjs video.html --sfx off           # silent
 Report the files with their format and length, what each is for, and what the user should replace (sample
 screens, stand-in numbers, the music).
 
+## Network access (disclosed)
+
+Rendering, checking and the sound effects run locally. The skill reaches the network only for:
+- **Fonts**: style presets `@import` Google Fonts (fonts.googleapis.com) when a page renders.
+- **Live pages**: `scripts/capture.mjs` opens the URL the user gives, to capture it.
+- **Voice setup, once**: `scripts/voice-setup.mjs` installs Piper or Kokoro with uv/pipx and downloads their
+  model files (huggingface.co/rhasspy, github.com/thewh1teagle/kokoro-onnx).
+- **Optional voices**: `chatterbox:` sends the line's text (and a reference recording, if one is given) to the
+  official Chatterbox Space on Hugging Face; `google:` sends the text to Google Cloud Text-to-Speech with the user's
+  own key. Piper and Kokoro run offline.
+
+No credentials are read or sent except the keys the user sets for those services (`HF_TOKEN`,
+`GOOGLE_TTS_API_KEY`), and only to those services.
+
 ## Honesty in ads
 
 Show only true claims. Numbers, ratings, reviews, user counts and press logos come from the user; if the video
