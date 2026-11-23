@@ -12,7 +12,8 @@
 | An effect is too loud or doubled | set `data-sfx="none"` on that element, or `data-sfx="tap@t:0.2"` for a quieter one |
 | `Piper is not installed` / `Voice … is not downloaded` | run `node <skill>/scripts/voice-setup.mjs` (it installs Piper with uv and the French voices) |
 | `GOOGLE_TTS_API_KEY is not set` | create an API key restricted to the Text-to-Speech API in Google Cloud, `export GOOGLE_TTS_API_KEY=…` in your shell profile |
-| `Chatterbox failed: … ZeroGPU runs limit` | the free anonymous quota is used up: create a free Hugging Face account, an access token, and `export HF_TOKEN=…` in your shell profile |
+| `Chatterbox failed: … ZeroGPU runs limit` | the free quota is used up. Anonymous: a few lines; with a free account (`HF_TOKEN`): a few lines a day, renewed daily; Hugging Face PRO: about 40 GPU minutes a day. Finished lines are cached, so run again the next day and only the missing lines are made, or use Kokoro or Piper meanwhile |
+| A Chatterbox line runs on after its text | handled: a line much longer than its text is made again with another seed, then cut at the first pause; silences at both ends are trimmed |
 | `Chatterbox is not set up` | run `node <skill>/scripts/voice-setup.mjs --chatterbox` |
 | `voice-overlap` / `voice-late` | start the next line later, cut words, or `data-voice-rate="1.1"` |
 | `Playwright is missing` | run `npm install && npx playwright install chromium` in the project folder |

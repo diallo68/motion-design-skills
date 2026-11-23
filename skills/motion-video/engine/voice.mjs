@@ -24,11 +24,27 @@ function chatterbox(text, spec, rate, out, root, opts = {}) {
   const [lang, ref] = spec.split('@');
   const refPath = ref ? resolve(root, ref) : null;
   if (refPath && !existsSync(refPath)) throw new Error(`reference voice not found: ${ref}`);
-  const tmp = rate !== 1 ? `${out}.raw.wav` : out;
-  const job = { text, lang: lang || 'fr', ref: refPath, out: tmp, exaggeration: opts.exaggeration ?? 0.5, cfg: opts.cfg ?? 0.5, temperature: 0.8, seed: 42 };
-  const r = spawnSync(CHATTERBOX_PY, [join(dirname(fileURLToPath(import.meta.url)), 'chatterbox.py'), JSON.stringify(job)], { encoding: 'utf8', timeout: 300000 });
-  if (r.status || !existsSync(tmp)) throw new Error(`Chatterbox failed: ${(r.stderr || '').trim().split('\n').pop()}`);
-  if (tmp !== out) { spawnSync('ffmpeg', ['-y', '-loglevel', 'error', '-i', tmp, '-af', `atempo=${rate}`, out]); spawnSync('rm', ['-f', tmp]); }
+  const tmp = `${out}.part.wav`;                                    // the cache only ever holds finished lines
+  // Chatterbox sometimes keeps talking after the text ends: a line much longer than its text is generated again
+  // with another seed, and if it still runs on, cut at the first pause after the expected length.
+  const expected = Math.max(1.2, text.length / 13);                  // French speech: about 13 characters a second
+  let ok = false;
+  for (const seed of [42, 7, 1234]) {
+    const job = { text, lang: lang || 'fr', ref: refPath, out: tmp, exaggeration: opts.exaggeration ?? 0.5, cfg: opts.cfg ?? 0.5, temperature: 0.8, seed };
+    const r = spawnSync(CHATTERBOX_PY, [join(dirname(fileURLToPath(import.meta.url)), 'chatterbox.py'), JSON.stringify(job)], { encoding: 'utf8', timeout: 300000 });
+    if (r.status || !existsSync(tmp)) { spawnSync('rm', ['-f', tmp]); throw new Error(`Chatterbox failed: ${(r.stderr || '').trim().split('\n').pop()}`); }
+    if (duration(tmp) <= expected * 1.8 + 1) { ok = true; break; }
+  }
+  if (!ok) {
+    const log = spawnSync('ffmpeg', ['-hide_banner', '-i', tmp, '-af', 'silencedetect=n=-40dB:d=0.35', '-f', 'null', '-'], { encoding: 'utf8' }).stderr;
+    const cut = [...log.matchAll(/silence_start: ([\d.]+)/g)].map((m) => +m[1]).find((t) => t >= expected * 0.6);
+    if (cut) { spawnSync('ffmpeg', ['-y', '-loglevel', 'error', '-i', tmp, '-t', String(cut + 0.1), `${tmp}.cut.wav`]); spawnSync('mv', [`${tmp}.cut.wav`, tmp]); }
+  }
+  // trim leading and trailing silence so the line starts when it is placed
+  spawnSync('ffmpeg', ['-y', '-loglevel', 'error', '-i', tmp, '-af', 'silenceremove=start_periods=1:start_threshold=-45dB,areverse,silenceremove=start_periods=1:start_threshold=-45dB,areverse,apad=pad_dur=0.08', `${tmp}.trim.wav`]);
+  spawnSync('mv', [`${tmp}.trim.wav`, tmp]);
+  if (rate !== 1) { spawnSync('ffmpeg', ['-y', '-loglevel', 'error', '-i', tmp, '-af', `atempo=${rate}`, out]); spawnSync('rm', ['-f', tmp]); }
+  else spawnSync('mv', [tmp, out]);
 }
 
 const which = (cmd) => { const r = spawnSync('sh', ['-c', 'command -v "$0"', cmd], { encoding: 'utf8' }); return r.status === 0 ? r.stdout.trim() : null; };
