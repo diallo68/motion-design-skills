@@ -2,6 +2,7 @@
 // One-time setup for voice-over with Piper (free, offline text-to-speech).
 //   node voice-setup.mjs                         install Piper and the two default French voices
 //   node voice-setup.mjs en_US-lessac-medium     add any voice from https://huggingface.co/rhasspy/piper-voices
+//   node voice-setup.mjs --chatterbox            set up Chatterbox (natural voices, voice from a reference recording)
 //
 // Piper is installed as a command-line tool with uv (`uv tool install piper-tts`) or pipx; voices go to
 // ~/.cache/motion-video/piper (PIPER_VOICES to change it). Each voice has its own licence: read its MODEL_CARD.
@@ -14,6 +15,22 @@ const engine = join(dirname(fileURLToPath(import.meta.url)), '..', 'engine', 'vo
 const { PIPER_DIR, piperBin, piperPython } = await import(engine);
 const has = (c) => spawnSync('sh', ['-c', 'command -v "$0"', c]).status === 0;
 const run = (c, a) => { console.log(`$ ${c} ${a.join(' ')}`); return spawnSync(c, a, { stdio: 'inherit' }).status === 0; };
+
+// Chatterbox (natural voices, voice from a reference recording): a small Python client for its Hugging Face Space
+if (process.argv.includes('--chatterbox')) {
+  const { CHATTERBOX_PY } = await import(engine);
+  const venv = dirname(dirname(CHATTERBOX_PY));
+  if (!existsSync(CHATTERBOX_PY)) {
+    const ok = has('uv') ? run('uv', ['venv', '--python', '3.11', venv]) && run('uv', ['pip', 'install', '--python', CHATTERBOX_PY, 'gradio_client'])
+      : run('python3', ['-m', 'venv', venv]) && run(CHATTERBOX_PY, ['-m', 'pip', 'install', 'gradio_client']);
+    if (!ok) process.exit(1);
+  }
+  console.log(`✓ Chatterbox client in ${venv}`);
+  console.log('Use <body data-voice="chatterbox:fr"> (the Space\'s French voice) or "chatterbox:fr@assets/voice/ref.wav" (a 10-30 s');
+  console.log('recording of a person who agreed). The text and the recording are sent to Hugging Face. For more free quota,');
+  console.log('create a free account, make an access token and add `export HF_TOKEN=…` to your shell profile.');
+  process.exit(0);
+}
 
 if (!piperBin()) {
   const ok = has('uv') ? run('uv', ['tool', 'install', 'piper-tts']) : has('pipx') ? run('pipx', ['install', 'piper-tts']) : false;

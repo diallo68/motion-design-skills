@@ -12,6 +12,8 @@
 | An effect is too loud or doubled | set `data-sfx="none"` on that element, or `data-sfx="tap@t:0.2"` for a quieter one |
 | `Piper is not installed` / `Voice … is not downloaded` | run `node <skill>/scripts/voice-setup.mjs` (it installs Piper with uv and the French voices) |
 | `GOOGLE_TTS_API_KEY is not set` | create an API key restricted to the Text-to-Speech API in Google Cloud, `export GOOGLE_TTS_API_KEY=…` in your shell profile |
+| `Chatterbox failed: … ZeroGPU runs limit` | the free anonymous quota is used up: create a free Hugging Face account, an access token, and `export HF_TOKEN=…` in your shell profile |
+| `Chatterbox is not set up` | run `node <skill>/scripts/voice-setup.mjs --chatterbox` |
 | `voice-overlap` / `voice-late` | start the next line later, cut words, or `data-voice-rate="1.1"` |
 | `Playwright is missing` | run `npm install && npx playwright install chromium` in the project folder |
 | `ffmpeg is not on the PATH` | install ffmpeg (macOS `brew install ffmpeg`, Ubuntu `sudo apt install ffmpeg`, Windows `winget install ffmpeg`) |

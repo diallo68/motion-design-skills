@@ -67,7 +67,8 @@ Open `video.html?format=feed&t=4` in a browser to look at any moment while you e
 
 - **Sound**: effects synthesised by the engine and placed on the visible actions (whoosh, click, pop, tap,
   chime…), music of your own mixed under them.
-- **Voice-over**: Piper (free, offline), Google Cloud Text-to-Speech or a recorded voice; each line timed by the
+- **Voice-over**: Chatterbox (natural, can speak with the voice of a person who agreed), Piper (free, offline),
+  Google Cloud Text-to-Speech or a recorded voice; each line timed by the
   check, the music ducking under it.
 - **3D**: isometric or perspective scenes with Three.js (a phone showing the real app, cards, coins, books,
   extruded logos…), objects entering one by one, the camera turning, on the same clock and checks as the rest.
