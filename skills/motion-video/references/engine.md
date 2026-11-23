@@ -76,7 +76,14 @@ and check (`--voice off` for none); speed `data-voice-rate`.
 |---|---|---|
 | Piper (default) | `piper:fr_FR-siwis-medium`, `piper:fr_FR-upmc-medium#pierre` | `scripts/voice-setup.mjs` once; free, offline |
 | Google Cloud TTS | `google:fr-FR-Neural2-A`, `google:fr-FR-Wavenet-B` | `GOOGLE_TTS_API_KEY` (an API key restricted to Text-to-Speech) |
+| Chatterbox (most natural) | `chatterbox:fr`, `chatterbox:fr@assets/voice/ref.wav` | `scripts/voice-setup.mjs --chatterbox` once; runs on Hugging Face (any machine); `HF_TOKEN` for quota |
 | Recorded | `{ at: 1.2, file: 'assets/voice/01.m4a' }` | a clean recording, one file per line |
+
+Chatterbox (Resemble AI, MIT licence, 23 languages) speaks with the voice of a 10–30 s reference recording when
+one is given: only a person who agreed (the client, a teacher, an actor with a signed release), or a recording
+whose licence allows it; never a voice taken from the internet. The text and the recording go to Hugging Face;
+every clip carries Resemble's inaudible watermark. Lines may set `exaggeration` (0.25 calm, 0.5 default, 0.8
+expressive) and `cfg` (lower is slower and more deliberate): `{ at, text, exaggeration: 0.6 }`.
 
 Lines are cached in `.voice/` by their text. The mix cleans the voice (high-pass, gentle compression), lowers the
 effects to 70 % and ducks the music about 11 dB while someone speaks. `check` reports `voice-overlap`,

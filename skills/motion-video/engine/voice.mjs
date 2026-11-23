@@ -3,16 +3,33 @@
 // Providers, set by <body data-voice="…"> or render/check --voice "…":
 //   piper:fr_FR-siwis-medium          free and offline (default). A speaker: piper:fr_FR-upmc-medium#pierre
 //   google:fr-FR-Neural2-A            Google Cloud Text-to-Speech; needs GOOGLE_TTS_API_KEY in the environment
+//   chatterbox:fr                     Chatterbox Multilingual (natural, 23 languages) through Hugging Face;
+//   chatterbox:fr@assets/voice/ref.wav  … speaking with the voice of a 10-30 s recording (consent required)
 //   (any line with a file)            a recorded voice: window.VOICE = [{ at: 1.2, file: 'assets/voice/01.m4a' }]
 // Speed: data-voice-rate="1.1" (1 = normal). Lines are cached in .voice/ next to the video, keyed by their text.
 import { spawnSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
 import { existsSync, mkdirSync, readFileSync, realpathSync, writeFileSync } from 'node:fs';
 import { homedir } from 'node:os';
-import { join, resolve } from 'node:path';
+import { join, resolve, dirname } from 'node:path';
+import { fileURLToPath } from 'node:url';
 
 export const PIPER_DIR = process.env.PIPER_VOICES || join(homedir(), '.cache', 'motion-video', 'piper');
 export const DEFAULT_VOICE = 'piper:fr_FR-siwis-medium';
+export const CHATTERBOX_PY = process.env.CHATTERBOX_PYTHON || join(homedir(), '.cache', 'motion-video', 'chatterbox-venv', 'bin', 'python');
+
+// Chatterbox: the model runs on Hugging Face (any machine works); spec "fr" or "fr@path/to/reference.wav"
+function chatterbox(text, spec, rate, out, root, opts = {}) {
+  if (!existsSync(CHATTERBOX_PY)) throw new Error('Chatterbox is not set up: run `node <skill>/scripts/voice-setup.mjs --chatterbox` once.');
+  const [lang, ref] = spec.split('@');
+  const refPath = ref ? resolve(root, ref) : null;
+  if (refPath && !existsSync(refPath)) throw new Error(`reference voice not found: ${ref}`);
+  const tmp = rate !== 1 ? `${out}.raw.wav` : out;
+  const job = { text, lang: lang || 'fr', ref: refPath, out: tmp, exaggeration: opts.exaggeration ?? 0.5, cfg: opts.cfg ?? 0.5, temperature: 0.8, seed: 42 };
+  const r = spawnSync(CHATTERBOX_PY, [join(dirname(fileURLToPath(import.meta.url)), 'chatterbox.py'), JSON.stringify(job)], { encoding: 'utf8', timeout: 300000 });
+  if (r.status || !existsSync(tmp)) throw new Error(`Chatterbox failed: ${(r.stderr || '').trim().split('\n').pop()}`);
+  if (tmp !== out) { spawnSync('ffmpeg', ['-y', '-loglevel', 'error', '-i', tmp, '-af', `atempo=${rate}`, out]); spawnSync('rm', ['-f', tmp]); }
+}
 
 const which = (cmd) => { const r = spawnSync('sh', ['-c', 'command -v "$0"', cmd], { encoding: 'utf8' }); return r.status === 0 ? r.stdout.trim() : null; };
 export const piperBin = () => which('piper') || (existsSync(join(homedir(), '.local/bin/piper')) ? join(homedir(), '.local/bin/piper') : null);
@@ -59,12 +76,14 @@ export async function synthesize(lines, { root, voice = DEFAULT_VOICE, rate = 1 
       out.push({ at: l.at, file: f, dur: duration(f), text: l.text || l.file }); continue;
     }
     const r = l.rate || rate;
-    const id = createHash('sha1').update(`${provider}|${spec}|${r}|${l.text}`).digest('hex').slice(0, 16);
+    const refHash = provider === 'chatterbox' && spec.includes('@') && existsSync(resolve(root, spec.split('@')[1])) ? createHash('sha1').update(readFileSync(resolve(root, spec.split('@')[1]))).digest('hex').slice(0, 8) : '';
+    const id = createHash('sha1').update(`${provider}|${spec}|${refHash}|${r}|${l.text}`).digest('hex').slice(0, 16);
     const f = join(cache, `${id}.wav`);
     if (!existsSync(f)) {
       if (provider === 'piper') piper(l.text, spec, r, f);
       else if (provider === 'google') await google(l.text, spec, r, f);
-      else throw new Error(`unknown voice provider "${provider}" (piper or google)`);
+      else if (provider === 'chatterbox') chatterbox(l.text, spec, r, f, root, l);
+      else throw new Error(`unknown voice provider "${provider}" (piper, google or chatterbox)`);
     }
     out.push({ at: l.at, file: f, dur: duration(f), text: l.text });
   }
