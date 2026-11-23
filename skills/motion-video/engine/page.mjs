@@ -17,10 +17,13 @@ export function options(argv) {
 }
 
 export async function loadPlaywright() {
-  try { return (await import('playwright')).chromium; } catch {
+  let chromium;
+  try { ({ chromium } = await import('playwright')); } catch {
     console.error('Playwright is missing: run `npm i playwright && npx playwright install chromium` in this folder.');
     process.exit(1);
   }
+  // WebGL (3D scenes) through the software renderer, so it works the same on every machine without a GPU
+  return { launch: (o = {}) => chromium.launch({ ...o, args: ['--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist', ...(o.args || [])] }) };
 }
 
 // Starts a server for the video's folder (fonts and modules do not load reliably from file://).
@@ -49,6 +52,9 @@ export async function openFormat(browser, url, format) {
   page.on('response', (r) => { if (r.status() >= 400) errors.push(`failed to load ${r.url()} (${r.status()})`); });
   await page.goto(`${url}?format=${format}`, { waitUntil: 'networkidle' });
   await page.evaluate(async () => { await document.fonts.ready; await Promise.all([...document.images].map((i) => i.decode().catch(() => {}))); });
+  // a 3D stage (scene3d.js) builds asynchronously: wait for it and its textures
+  await page.waitForFunction(() => !document.querySelector('script[type=module]') || window.__mvReady, null, { timeout: 60000 }).catch(() => errors.push('the 3D stage never finished building (missing s.done()?)'));
+  await page.evaluate(() => window.__mvReady);
   return { page, errors };
 }
 

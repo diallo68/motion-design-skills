@@ -20,7 +20,7 @@
   .br-wrap .browser { inset: 0; }
 
   /* stand-in site (replace with a capture) */
-  .site { position: absolute; left: 0; right: 0; top: 0; font-family: var(--font); color: #1a1a1a; background: #fbfaf7; }
+  .site { position: relative; font-family: var(--font); color: #1a1a1a; background: #fbfaf7; }
   .site nav { display: flex; align-items: center; gap: 30px; padding: 26px 40px; font: 600 22px var(--font); }
   .site nav b { font-size: 30px; margin-right: auto; letter-spacing: -.02em; }
   .site nav .cta { background: var(--accent); color: var(--accent-ink); padding: 12px 22px; border-radius: 30px; }
@@ -33,8 +33,8 @@
   .site .grid3 div { height: 260px; border-radius: 20px; background: #eee9df; padding: 22px; font: 700 24px var(--font); }
   .site .price { margin: 0 40px 60px; padding: 40px; border-radius: 24px; background: #1a1a1a; color: #fff; font: 800 48px var(--font); }
 
-  .scroller { position: absolute; left: 0; right: 0; top: 0; }
-  @keyframes scrollPage { 0%, 12% { transform: translateY(0) } 55%, 70% { transform: translateY(-38%) } 100% { transform: translateY(-8%) } }
+  .scroller { position: absolute; left: 0; right: 0; top: 0; }   /* its height is the page's, so scrollPage can move it by a percentage */
+  @keyframes scrollPage { 0%, 12% { transform: translateY(0) } 50%, 62% { transform: translateY(-38%) } 90%, 100% { transform: translateY(0) } }   /* back on top before the click */
 
   .ph-wrap { position: absolute; left: 50%; top: 520px; width: 420px; height: 870px; margin-left: -210px; }
   body.landscape .ph-wrap { top: 120px; } body.feed .ph-wrap { top: 260px; transform: scale(.85); transform-origin: 50% 0; } body.square .ph-wrap { top: 160px; transform: scale(.85); transform-origin: 50% 0; }
@@ -63,7 +63,7 @@
       <div class="bar"><span class="lights"><i></i><i></i><i></i></span><span class="url"><span data-type="3.5,12">northwind.studio</span></span></div>
       <div class="progress" data-in="grow@4.6/.5" style="opacity:1"></div>
       <div class="view">
-        <div class="scroller" data-in="scrollPage@5/5" style="animation-timing-function:var(--ease-io)">
+        <div class="scroller" data-in="scrollPage@5/3.9" style="animation-timing-function:var(--ease-io)">
           <div class="site" data-in="fadeIn@4.9/.3">
             <nav><b>Northwind</b><span>Work</span><span>Studio</span><span>Prices</span><span class="cta">Book a call</span></nav>
             <div class="hero"><h1>Interiors for small spaces</h1><p>We design flats and shops under 80 m², from the first sketch to the last shelf.</p><span class="go" id="go" data-in="press@9.05/.3">See our work</span></div>
@@ -74,13 +74,13 @@
         </div>
       </div>
     </div>
-    <div class="cursor" style="left:62%;top:78%" data-in="fadeIn@8/.3" data-out="fadeOut@9.7/.2"><span data-in="riseIn@8/.9" style="display:block">CURSOR</span></div>
+    <div class="cursor" data-point="#go@9.05" data-in="fadeIn@8.3/.3" data-out="fadeOut@9.7/.2"><span data-in="riseIn@8.3/.7" style="display:block">CURSOR</span></div>
   </div>
 
   <script>window.CHIPS = [
     { icon: 'sparkles', text: 'New portfolio', at: 5.4, side: 'left', top: 620 },
     { icon: 'calendar', text: 'Book a call online', at: 6.6, side: 'right', top: 860 },
-    { icon: 'card', text: 'Clear prices', at: 7.8, side: 'left', top: 1100, hold: 1.4 },
+    { icon: 'card', text: 'Clear prices', at: 7.1, side: 'left', top: 1100, hold: 1.1 },
   ];</script>
 
   <!-- 4. Same site on a phone: the scene opens in a circle from the pressed button -->

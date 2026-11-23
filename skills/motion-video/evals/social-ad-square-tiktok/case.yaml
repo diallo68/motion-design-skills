@@ -1,0 +1,4 @@
+schema_version: "1.1"
+name: social-ad-square-tiktok
+expected_outcome: |
+  A social ad of 10-12 s in square (1080x1080) and story (1080x1920), in English, rendered to MP4 with sound. A hook on the student's problem in the first seconds, the offer (first lesson free, evening tutors), an end card with a clear action; no invented ratings, user counts or reviews.

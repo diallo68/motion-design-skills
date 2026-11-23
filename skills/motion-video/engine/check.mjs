@@ -340,7 +340,7 @@ for (const format of formats) {
     const clip = { x: Math.max(0, Math.floor(u.l)), y: Math.max(0, Math.floor(u.t)) }; clip.width = Math.min(W, Math.ceil(u.r)) - clip.x; clip.height = Math.min(H, Math.ceil(u.b)) - clip.y;
     if (clip.width < 4 || clip.height < 4) continue;
     await page.evaluate(({ t, id }) => { window.seek(t); window.__mvHide(true); }, { t });
-    const png = await page.screenshot({ clip, type: 'png' });
+    const png = await page.screenshot({ clip, type: 'png', timeout: 120000 });
     await page.evaluate(() => window.__mvHide(false));
     const px = await decoder.evaluate(async (b64) => {
       const img = new Image(); img.src = `data:image/png;base64,${b64}`; await img.decode();

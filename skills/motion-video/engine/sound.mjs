@@ -71,7 +71,22 @@ export function mix({ cues, root, duration, out, music, musicVolume = 0.55, voic
   }
   chains.push(`[${input('-f', 'lavfi', '-t', String(duration), '-i', 'anullsrc=r=48000:cl=stereo')}]anull[bed]`); bus.push('[bed]');
   const graph = `${chains.join(';')};${bus.join('')}amix=inputs=${bus.length}:normalize=0:duration=longest,atrim=0:${duration},alimiter=limit=0.9[a]`;
-  const r = ff([...args, '-filter_complex', graph, '-map', '[a]', '-c:a', 'pcm_s16le', out]);
+  const raw = out.replace(/\.wav$/, '') + '.raw.wav';
+  const r = ff([...args, '-filter_complex', graph, '-map', '[a]', '-c:a', 'pcm_s16le', raw]);
   if (r.status) throw new Error(`sound mix failed: ${r.stderr}`);
+  normalize(raw, out, voice.length || music ? -16 : -18);
+  rmSync(raw, { force: true });
   return bus.length;
+}
+
+// Loudness normalisation (EBU R128): measure, then one static gain to the target, peaks held under about -1.5 dB.
+// Feeds play at about -14 to -16 LUFS; a film of effects alone sits a little lower so they never shout.
+export function normalize(input, out, target = -16) {
+  const m = spawnSync('ffmpeg', ['-hide_banner', '-i', input, '-af', `loudnorm=I=${target}:TP=-1.5:LRA=11:print_format=json`, '-f', 'null', '-'], { encoding: 'utf8' }).stderr;
+  const j = JSON.parse(m.slice(m.lastIndexOf('{'), m.lastIndexOf('}') + 1));
+  if (!isFinite(+j.input_i) || +j.input_i < -70) { ff(['-i', input, '-c', 'copy', out]); return; }   // silent: nothing to do
+  // one static gain to the target; a limiter catches the rare peak above -1.5 dB
+  const gain = target - +j.input_i;
+  const r = ff(['-i', input, '-af', `volume=${gain.toFixed(2)}dB,alimiter=limit=0.84:attack=2:release=60:level=disabled,aresample=48000`, '-c:a', 'pcm_s16le', out]);
+  if (r.status) throw new Error(`loudness normalisation failed: ${r.stderr}`);
 }

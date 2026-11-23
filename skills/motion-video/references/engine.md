@@ -22,6 +22,7 @@ A video is an HTML page that links `engine/motion.css`, `style.css`, then loads 
 | `data-tap` | `5.2` | tap ring at 5.2 s (on a `.tap` element) |
 | `data-cam` | `2/.6 1.8 0 -240; 4/.5 1 0 0` | camera on a `.cam` wrapper: states `at/duration scale x y [ease]` in order |
 | `data-become` | `9.9/.6` | grows past the frame (measured on its start frame); its fill becomes the next ground |
+| `data-point` | `#go@9.05` | places the element (a cursor) on that element's centre as it is at that time |
 | `data-from` | `#go` | an `iris` on a `.flood` starts from that element's centre |
 | `data-check` | `note` | how `check.mjs` treats the element: `ignore`, `ui`, `note`, `overlap` |
 
@@ -63,6 +64,8 @@ chips sliding in: tap; phone, fly and zoom entrances, camera moves: swoosh; whip
 path. `window.SFX = [{ at, sfx, gain }]` adds cues by script. Effects are synthesised by `sound.mjs` into
 `engine/.sfx/` on first render, each peaking at -3 dB. `render.mjs --audio track.mp3 --music-volume 0.55` lays
 music under them; `--sfx off` renders silent.
+The finished mix is normalised to -16 LUFS with voice or music, -18 LUFS for effects alone, peaks under
+about -1.5 dB: loud enough for feeds, never clipping.
 
 ## Voice-over
 Lines: `data-vo="Bloqué sur un exercice ?"` on an element (said at its entrance, `data-vo-at="1.2"` to move it), or
