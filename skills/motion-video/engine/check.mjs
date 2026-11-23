@@ -11,7 +11,8 @@
 // read-time, last-line, end-card, small-text, contrast, crowded, never-shown, load; motion warnings moving-text,
 // same-entrance, tap-ring.
 // Opt-outs on any element: data-check="ignore" (never checked), "ui" (app or site UI inside a device: not read),
-// "note" (small print such as the disclaimer: no read-time, safe-zone or contrast rule), "overlap" (meant to overlap).
+// "note" (small print such as the disclaimer: no read-time, safe-zone or contrast rule), "overlap" (meant to overlap),
+// "beat" (a one- or two-word line cut on the rhythm: may hold 0.4 s).
 import { options, loadPlaywright, serve, openFormat, pickFormats, SIZES } from './page.mjs';
 import { synthesize, DEFAULT_VOICE } from './voice.mjs';
 
@@ -116,7 +117,7 @@ function install() {
       if (!blocks.has(id)) {
         const cls = [...blk.classList].filter((c) => c !== 'words')[0];
         blocks.set(id, { id, sel: blk.id ? `#${blk.id}` : `${blk.tagName.toLowerCase()}${cls ? '.' + cls : ''}`,
-          note: tk.has('note') || !!blk.closest('.disclaimer'), overlapOk: tk.has('overlap'), text: '', words: 0, seen: 0, read: 0,
+          note: tk.has('note') || !!blk.closest('.disclaimer'), overlapOk: tk.has('overlap'), beat: tk.has('beat'), text: '', words: 0, seen: 0, read: 0,
           maxOp: 0, rects: [], cut: false, off: false, size: 1e9, colors: {}, covered: 0, probes: 0 });
       }
       const b = blocks.get(id);
@@ -146,7 +147,7 @@ function install() {
     for (const [id, e] of els) blocks.get(id).inside = els.filter(([j, f]) => j !== id && f.contains(e)).map(([j]) => j);
     return [...blocks.values()].map((b) => {
       const color = Object.entries(b.colors).sort((a, c) => c[1] - a[1])[0]?.[0];
-      return { id: b.id, sel: b.sel, note: b.note, overlapOk: b.overlapOk, text: b.text.replace(/\s+/g, ' ').slice(0, 60),
+      return { id: b.id, sel: b.sel, note: b.note, overlapOk: b.overlapOk, beat: b.beat, text: b.text.replace(/\s+/g, ' ').slice(0, 60),
         words: b.words, readable: b.seen ? b.read / b.seen >= 0.8 : false, op: b.op || 0, rects: b.rects,
         cut: b.cut, off: b.off, inside: b.inside, size: b.size === 1e9 ? 0 : Math.round(b.size), color, coveredShare: b.probes ? b.covered / b.probes : 0 };
     });
@@ -284,7 +285,8 @@ for (const format of formats) {
     // read time
     if (!b.note) for (const [a, z] of readRuns[id]) {
       const words = Math.max(...s.filter(({ t, b }) => b && t >= a && t < z).map(({ b }) => b.words));
-      const need = 0.5 + 0.3 * words; const got = z - a;
+      // a one- or two-word beat line (kinetic type cut on the rhythm) may hold 0.4 s
+      const need = b.beat && words <= 2 ? 0.4 : 0.5 + 0.3 * words; const got = z - a;
       if (z >= D - STEP) continue;                     // still on screen at the end: the last-line rule covers it
       if (got < need - 0.05) add(got < need * 0.75 ? 'error' : 'warning', 'read-time', b, a, z, `${words} word${words > 1 ? 's' : ''} readable for ${got.toFixed(1)} s; a viewer needs about ${need.toFixed(1)} s.`, `Hold it ${(need - got).toFixed(1)} s longer (0.5 s + 0.3 s a word), or cut words.`);
     }
