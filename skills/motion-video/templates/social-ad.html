@@ -2,7 +2,8 @@
 <!-- TEMPLATE social-ad · 12 s · story / feed / square / landscape — built to work muted, read in a scroll
      Beats: 0-2.5 hook (the viewer's problem, in their words) · 2.5-5 the product answers it ·
             5-9.2 three proofs, one card each, stacked · 9.2-12 the offer on the end card.
-     Every line stays up 0.5 s + 0.3 s a word (check.mjs measures it): cut words before you cut time. -->
+     Every line stays up 0.5 s + 0.3 s a word (check.mjs measures it): cut words before you cut time.
+     Words in [brackets] name their role: write each from the client's concept (check.mjs reports any left). -->
 <html lang="en">
 <head>
 <meta charset="utf-8">
@@ -26,29 +27,29 @@
   <div class="bg-mesh"></div>
 
   <!-- 1. Hook -->
-  <div class="mid" data-out="whipOutL@2.4/.25">
-    <div class="display hook" data-words=".05,.12">Still splitting bills by hand?</div>
+  <div class="mid" data-out="whipOutL@2.4/.25" data-drift=".9,2.6">
+    <div class="display hook" data-words=".05,.12">[The problem they have?]</div>
   </div>
 
   <!-- 2. Answer -->
-  <div class="mid center" data-show="2.5,5" data-out="outBlur@4.75/.25">
-    <div class="label" data-in="fadeIn@2.5/.3">Meet</div>
-    <div class="display" style="font-size:180px" data-in="whipInR@2.5/.45"><span class="grad">Splitly</span></div>
-    <div class="lead" style="margin-top:24px" data-in="fadeUp@2.75/.6">Bills settled in one tap.</div>
+  <div class="mid center" data-show="2.5,5" data-out="outBlur@4.75/.25" data-drift="2.9,5">
+    <div class="label" data-in="fadeIn@2.5/.3">[Kicker]</div>
+    <div class="display" style="font-size:180px" data-in="whipInR@2.5/.45"><span class="grad">[Name]</span></div>
+    <div class="lead" style="margin-top:24px" data-in="fadeUp@2.75/.6">[The answer, in one line]</div>
   </div>
 
   <!-- 3. Three proofs: one card a second, all three held together long enough to read the last -->
-  <div class="cards" data-show="5,9.2">
-    <div class="card" data-in="slideR@5.1/.6"><span class="ico">ICO:card</span><span>Add a receipt<small>Totals read for you</small></span></div>
-    <div class="card" data-in="slideR@6.1/.6"><span class="ico">ICO:users</span><span>Split with friends<small>Evenly or by item</small></span></div>
-    <div class="card" data-in="slideR@7.1/.6"><span class="ico">ICO:check</span><span>Settle up<small>One payment</small></span></div>
+  <div class="cards" data-show="5,9.2" data-drift="7.4,9.2">
+    <div class="card" data-in="slideR@5.1/.6"><span class="ico">ICO:sparkles</span><span>[Proof 1]<small>[Its detail]</small></span></div>
+    <div class="card" data-in="slideR@6.1/.6"><span class="ico">ICO:bolt</span><span>[Proof 2]<small>[Its detail]</small></span></div>
+    <div class="card" data-in="slideR@7.1/.6"><span class="ico">ICO:check</span><span>[Proof 3]<small>[Its detail]</small></span></div>
   </div>
 
 <script src="engine/motion.js"></script>
 <script>
   document.querySelectorAll('.ico').forEach((e) => { const m = e.textContent.match(/ICO:(\w+)/); if (m) e.innerHTML = icon(m[1]); });
   // the offer is the end card's line: name, offer, one action
-  endcard({ at: 9.2, name: 'Splitly', tagline: 'Free for groups up to 8', cta: 'Download free', stores: ['apple', 'google'] });
+  endcard({ at: 9.2, name: '[Name]', tagline: '[The offer]', cta: '[Action]', stores: ['apple', 'google'] });
 </script>
 </body>
 </html>

@@ -41,7 +41,7 @@ export async function stage(opts = {}) {
   const W = innerWidth, H = innerHeight;
   const o = { camera: 'iso', light: 'soft', frame: { top: 0.3, bottom: 0.95, side: 0.06 }, fov: 30, shadows: true, ...opts };
   const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, preserveDrawingBuffer: true });
-  renderer.setPixelRatio(1); renderer.setSize(W, H);
+  renderer.setPixelRatio(window.devicePixelRatio || 1); renderer.setSize(W, H);   // render.mjs --scale 2 supersamples the 3D too
   renderer.shadowMap.enabled = o.shadows; renderer.shadowMap.type = THREE.PCFSoftShadowMap;
   renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.outputColorSpace = THREE.SRGBColorSpace;
   const canvas = renderer.domElement; canvas.className = 'stage3d-canvas';
@@ -233,6 +233,9 @@ export async function stage(opts = {}) {
       scene.traverse((n) => { if (n.userData.show || n.userData.screens) objs.add(n); });
       for (const n of objs) n.userData.rest = { p: n.position.clone(), r: n.rotation.clone(), s: n.scale.clone() };
       s.restObjects = [...objs];
+      // what enters when, for check.mjs (long-beat): entrances, camera moves, screen changes, objects shown
+      window.__mvEvents = [...tracks.filter((t) => t.entrance).map((t) => t.at), ...camTracks.map((c) => c.at)];
+      for (const n of objs) { (n.userData.screens || []).forEach((x) => window.__mvEvents.push(x.at)); if (n.userData.show) window.__mvEvents.push(n.userData.show[0]); }
       const prev = window.onSeek;
       window.onSeek = (t) => { if (prev) prev(t); s.render(t); };
       window.__mvReady = Promise.all(pending).then(() => s.render(window.__mvT || 0));

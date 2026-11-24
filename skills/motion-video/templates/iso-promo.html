@@ -5,7 +5,10 @@
      Beats: 0-3 ground and hook · 3-6.2 phone with the app · 6.2-9.2 cards and a punch-in · 9.2-12 end card.
      Replace the stand-in screen (uiTexture) with real captures: node <skill>/scripts/capture-app.mjs home, then
      phone({ screen: 'assets/screens/home.png' }) and s.screens(phone, [{ at, src }]) to change it on the beat.
-     Needs three.js in the project: npm i three (init.mjs adds it). -->
+     Needs three.js in the project: npm i three (init.mjs adds it).
+     Words in [brackets] name their role, and the props are neutral blocks: write the words and choose the objects from
+     the client's concept (s.books() and s.cap() for a school, s.pin() for delivery, s.coin() for payments,
+     s.laptop() for work). check.mjs reports any [bracket] or template phrase left. -->
 <html lang="en">
 <head>
 <meta charset="utf-8">
@@ -23,13 +26,13 @@
 <body data-sfx="auto" data-duration="12" data-formats="story,feed,square,landscape">
 
   <div class="top center" data-out="outBlur@2.9/.25">
-    <div class="h1" data-words=".3,.1">Homework, <span class="accent">sorted.</span></div>
+    <div class="h1" data-words=".3,.1">[The&nbsp;problem] <span class="accent">[solved]</span></div>
   </div>
   <div class="top center" data-show="3,6.2" data-out="outBlur@6/.2">
-    <div class="h1" data-in="blurIn@3.1/.5">Every subject, <span class="accent">one app</span></div>
+    <div class="h1" data-in="blurIn@3.1/.5">[What the app does] <span class="accent">[for whom]</span></div>
   </div>
   <div class="top center" data-show="6.2,9.2">
-    <div class="h1" data-in="fadeUp@6.3/.6">Answers <span class="accent">checked</span></div>
+    <div class="h1" data-in="fadeUp@6.3/.6">[The proof] <span class="accent">[shown]</span></div>
   </div>
 
 <script src="engine/motion.js"></script>
@@ -46,18 +49,20 @@
   const tiles = s.place(s.tiles(3, 2.6, 0.3, 0xe8d8b4));
   s.rise(ground, 0.1, { dur: 0.9, depth: 4 }); s.rise(tiles, 0.4, { dur: 0.7, depth: 1 });
 
-  const phone = s.place(s.phone({ screen: s.uiTexture({ title: 'Today', rows: ['Maths: fractions', 'History quiz', 'French reading'], accent: ACCENT }) }), 0.4, 0, -0.6, Math.PI / 4 - 0.12);
+  const home = s.uiTexture({ title: '[Screen]', rows: ['[Item]', '[Item]', '[Item]'], accent: ACCENT });
+  const phone = s.place(s.phone({ screen: home }), 0.4, 0, -0.6, Math.PI / 4 - 0.12);
   phone.scale.setScalar(1.15);
   s.rise(phone, 3.1, { dur: 0.9, depth: 9 });
-  s.screens(phone, [{ at: 0, src: s.uiTexture({ title: 'Today', rows: ['Maths: fractions', 'History quiz', 'French reading'], accent: ACCENT }) },
-                    { at: 6.3, src: s.uiTexture({ title: 'Quiz', rows: ['1958  ✓', '1960', '1962'], accent: ACCENT }) }]);
+  s.screens(phone, [{ at: 0, src: home },
+                    { at: 6.3, src: s.uiTexture({ title: '[Result]', rows: ['[The answer]  ✓', '[Item]', '[Item]'], accent: ACCENT }) }]);
 
-  const books = s.place(s.books([ACCENT, 0xf5b700, 0xe9dcc0]), -2.9, 0, 1.9);
-  s.drop(books, 3.6, { dur: 0.8, height: 7 });
-  const cap = s.place(s.cap(), -2.9, books.userData.top, 1.9, 0.5);
-  s.pop(cap, 4.3);
-  const pencil = s.place(s.pencil(), 2.6, 0, 3.0, 0.9);
-  s.slide(pencil, 4.6, { from: [3, 0, 2] });
+  // props: the client's world, as objects (neutral blocks here)
+  const base = s.place(s.block(2.2, 1.1, 1.8, ACCENT), -2.9, 0, 1.9);
+  s.drop(base, 3.6, { dur: 0.8, height: 7 });
+  const top = s.place(s.block(1.2, 0.8, 1.2, 0xf5b700), -2.9, 1.1, 1.9, 0.5);
+  s.pop(top, 4.3);
+  const side = s.place(s.block(1.4, 0.5, 0.9, 0xe9dcc0), 2.6, 0, 3.0, 0.9);
+  s.slide(side, 4.6, { from: [3, 0, 2] });
 
   const cards = [0, 1, 2].map((i) => s.place(s.card({ accent: i === 1 ? ACCENT : 0xd8d1c1 }), 3.5 + i * 0.3, 6.6 - i * 1.0, 1.3 + i * 0.3, Math.PI / 4 - 0.12));
   cards.forEach((c, i) => s.pop(c, 6.4 + i * 0.25));
@@ -70,7 +75,7 @@
   s.done();
 </script>
 <script>
-  endcard({ at: 9.2, name: 'Brightly', tagline: 'Homework help for every subject.', stores: ['google'], storeNote: 'Coming soon on' });
+  endcard({ at: 9.2, name: '[Name]', tagline: '[The promise, in one line]', stores: ['google'], storeNote: 'Coming soon on' });
 </script>
 </body>
 </html>

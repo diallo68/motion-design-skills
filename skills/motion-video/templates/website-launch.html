@@ -5,7 +5,8 @@
             button (iris) onto the same site on a phone · 12.2-15 endcard with the URL.
      The page inside the browser is plain HTML here. With a live site, capture it with
      `node <skill>/scripts/capture.mjs https://site --out assets/site-desktop.png` and replace .site with
-     <img src="assets/site-desktop.png">. Only show the top of a real site if lower parts show real people's data. -->
+     <img src="assets/site-desktop.png">. Only show the top of a real site if lower parts show real people's data.
+     Words in [brackets] name their role: write each from the client's site and concept (check.mjs reports any left). -->
 <html lang="en">
 <head>
 <meta charset="utf-8">
@@ -39,6 +40,7 @@
   .ph-wrap { position: absolute; left: 50%; top: 520px; width: 420px; height: 870px; margin-left: -210px; }
   body.landscape .ph-wrap { top: 120px; } body.feed .ph-wrap { top: 260px; transform: scale(.85); transform-origin: 50% 0; } body.square .ph-wrap { top: 160px; transform: scale(.85); transform-origin: 50% 0; }
   .ph-wrap .phone { left: 0; top: 0; }
+  .ph-wrap { transform-origin: 50% 0; }   /* the slow push grows the phone downward, away from the title */
   .site.mobile h1 { font-size: 52px; } .site.mobile .hero { padding: 120px 28px 20px; } .site.mobile .img { margin: 20px 28px; height: 260px; } .site.mobile nav { padding: 70px 28px 0; position: absolute; }
 </style>
 </head>
@@ -47,29 +49,29 @@
   <div class="bg-glow" style="width:900px;height:900px;left:-300px;top:-300px" data-loop="drift/10"></div>
 
   <!-- 1. Statement -->
-  <div class="top center" data-out="outUp@2.7/.4">
-    <div class="h1" data-words=".2,.1">Our new site <span class="grad">is live</span></div>
+  <div class="top center" data-out="outUp@2.7/.4" data-drift=".6,2.9">
+    <div class="h1" data-words=".2,.1">[The news] <span class="grad">[in two words]</span></div>
   </div>
 
   <!-- 2. Headline during the browser part -->
   <div class="top center" data-show="2.8,9.6">
-    <div class="h2" data-in="blurIn@3/.5">Everything in one place</div>
+    <div class="h2" data-in="blurIn@3/.5">[The site’s main promise]</div>
   </div>
   <style>body.landscape .top { top: 70px !important } body.landscape .top .h2, body.landscape .top .h1 { font-size: 64px } body.square .top { top: 80px !important }</style>
 
   <!-- 3. Browser -->
-  <div class="br-wrap" data-show="0,10">
+  <div class="br-wrap" data-show="0,10" data-drift="3.4,10,1.03">
     <div class="browser" data-in="fadeUp@2.8/.9">
-      <div class="bar"><span class="lights"><i></i><i></i><i></i></span><span class="url"><span data-type="3.5,12">northwind.studio</span></span></div>
+      <div class="bar"><span class="lights"><i></i><i></i><i></i></span><span class="url"><span data-type="3.5,12">[Address]</span></span></div>
       <div class="progress" data-in="grow@4.6/.5" style="opacity:1"></div>
       <div class="view">
         <div class="scroller" data-in="scrollPage@5/3.9" style="animation-timing-function:var(--ease-io)">
           <div class="site" data-in="fadeIn@4.9/.3">
-            <nav><b>Northwind</b><span>Work</span><span>Studio</span><span>Prices</span><span class="cta">Book a call</span></nav>
-            <div class="hero"><h1>Interiors for small spaces</h1><p>We design flats and shops under 80 m², from the first sketch to the last shelf.</p><span class="go" id="go" data-in="press@9.05/.3">See our work</span></div>
+            <nav><b>[Name]</b><span>[Menu]</span><span>[Menu]</span><span>[Menu]</span><span class="cta">[Call to action]</span></nav>
+            <div class="hero"><h1>[The site’s main title]</h1><p>[Its subtitle, as the site writes it]</p><span class="go" id="go" data-in="press@9.05/.3">[Main button]</span></div>
             <div class="img"></div>
-            <div class="grid3"><div>Kitchens</div><div>Living rooms</div><div>Shops</div></div>
-            <div class="price">From 1,200 € a room</div>
+            <div class="grid3"><div>[Offer 1]</div><div>[Offer 2]</div><div>[Offer 3]</div></div>
+            <div class="price">[Price or proof]</div>
           </div>
         </div>
       </div>
@@ -78,21 +80,21 @@
   </div>
 
   <script>window.CHIPS = [
-    { icon: 'sparkles', text: 'New portfolio', at: 5.4, side: 'left', top: 620 },
-    { icon: 'calendar', text: 'Book a call online', at: 6.6, side: 'right', top: 860 },
-    { icon: 'card', text: 'Clear prices', at: 7.1, side: 'left', top: 1100, hold: 1.1 },
+    { icon: 'sparkles', text: '[Offer 1]', at: 5.4, side: 'left', top: 620 },
+    { icon: 'calendar', text: '[Offer 2]', at: 6.6, side: 'right', top: 860 },
+    { icon: 'card', text: '[Offer 3]', at: 7.1, side: 'left', top: 1100, hold: 1.1 },
   ];</script>
 
   <!-- 4. Same site on a phone: the scene opens in a circle from the pressed button -->
   <div class="flood" style="background:var(--bg);z-index:6" data-show="9.3" data-in="iris@9.35/.5" data-out="fadeOut@12.2/.3" data-from="#go">
   <div class="bg-dots"></div>
-  <div class="top center"><div class="h2" data-in="fadeUp@9.9">And on your phone</div></div>
-  <div class="ph-wrap stage3d">
+  <div class="top center"><div class="h2" data-in="fadeUp@9.9">[The same, on a phone]</div></div>
+  <div class="ph-wrap stage3d" data-drift="10.4,12.2">
     <div class="phone sm" data-in="phoneIn@9.75/1">
       <div class="screen" style="--screen-bg:#fbfaf7">
         <div class="site mobile">
-          <nav><b>Northwind</b></nav>
-          <div class="hero"><h1>Interiors for small spaces</h1></div>
+          <nav><b>[Name]</b></nav>
+          <div class="hero"><h1>[The site’s main title]</h1></div>
           <div class="img"></div>
         </div>
       </div>
@@ -105,7 +107,7 @@
   document.querySelectorAll('.cursor > span').forEach((c) => c.innerHTML = icon('cursor'));
   const dy = { landscape: -420, story: 0, feed: -300, square: -380 }[FORMAT];
   chips(CHIPS.map((c) => ({ ...c, top: c.top + dy, inset: { landscape: 90, square: 40 }[FORMAT] })));   // story: the helper keeps right-hand chips clear of the platform's buttons
-  endcard({ at: 12.2, name: 'Northwind', tagline: 'Interiors for small spaces', cta: 'northwind.studio' });
+  endcard({ at: 12.2, name: '[Name]', tagline: '[The site’s main promise]', cta: '[Address]' });
 </script>
 </body>
 </html>

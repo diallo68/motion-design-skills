@@ -43,9 +43,10 @@ export async function serve(file) {
 }
 
 // Opens the page at a format's size, waits for fonts and images; errors lists load and script failures.
-export async function openFormat(browser, url, format) {
+// scale 2 renders every pixel twice as fine (render.mjs --scale 2 then scales it back down: supersampling).
+export async function openFormat(browser, url, format, scale = 1) {
   const [w, h] = SIZES[format];
-  const page = await browser.newPage({ viewport: { width: w, height: h }, deviceScaleFactor: 1 });
+  const page = await browser.newPage({ viewport: { width: w, height: h }, deviceScaleFactor: scale });
   const errors = [];
   page.on('pageerror', (e) => errors.push(e.message));
   page.on('requestfailed', (r) => errors.push(`failed to load ${r.url()}`));

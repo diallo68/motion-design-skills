@@ -5,6 +5,10 @@
 | `check` reports `safe-zone` in story | move the text inside x 60–960, y 270–1250; use `.top`/`.bottom`, which already do |
 | `check` reports `read-time` | hold the line longer or cut words; a split line counts from when most words are in |
 | `check` reports `covered` | something opaque is drawn on top (a later element, a card): raise the text's `z-index` or retime |
+| `check` reports `dead-time` | the frame is frozen while a line holds: `data-drift="a,b"` on the beat's scene or device, or let the UI act (moves 26–28) |
+| `check` reports `object-over-text` | a phone, card or picture covers part of a line: move or scale it, shorten or rebalance the line; `data-check="overlap"` only when the overlap is designed |
+| `check` reports `template-leftover` | a phrase or `[Placeholder]` of the template is still in the page (text, voice line or script string): write it from the client's concept |
+| `check` reports `orphan` | the title ends on one word: shorten it, change its size or width, or join the last two words with `&nbsp;` |
 | `check` flags app text inside a phone | it is not inside `.phone`/`.browser`: add `data-check="ui"` to its container |
 | `capture-app` sees no device | start the emulator or simulator first; `--list` shows what `adb` and `simctl` see |
 | A capture sits under the phone's notch | put `<div class="statusbar">` before the `<img class="shot">`, or capture with `--keep-status` |
@@ -26,5 +30,5 @@
 | Words split oddly | `data-words` splits text nodes on spaces; use `&nbsp;` to keep two words together |
 | Ticker cuts a word | each `<span>` inside the ticker must be one line; shorten the word or lower the font size |
 | Blank frames at the start | images not local or too large; keep assets in the project and under ~3 MB each |
-| Render is slow | it is about 0.1–0.3 s per frame; render one format with `--format`, check with `--sheet` first |
+| Render is slow | it is about 0.1–0.3 s per frame (×2 with `--scale 2`, ×N with `--motion-blur N`); render one format with `--format`, check with `--sheet` first, keep the quality options for the final render |
 | Video not accepted by a platform | outputs are H.264, yuv420p, 30 fps, faststart: accepted everywhere; add `--fps 60` only if asked |

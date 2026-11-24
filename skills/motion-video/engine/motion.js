@@ -14,6 +14,9 @@
 //   data-tap="5.2"                a tap ring at 5.2 s (put it on a .tap element; prefer press on the tapped thing)
 //   data-in="fadeUp@1.2/.8:move"  any timing may name its ease: arrive, move, leave, pop, linear (default by role)
 //   data-cam="2/.6 1.8 0 -240; 4/.5 1 0 0"  camera on a wrapper: at/duration scale x y [ease], states in order
+//   data-drift="2.4,6.3"          a slow push-in from 2.4 s to 6.3 s (scale 1 → 1.04, linear; "2.4,6.3,1.06" sets the end
+//                                 scale): the frame keeps moving while a landed line holds still. It uses the CSS `scale`
+//                                 property, so it adds to the element's entrance, camera and format transforms
 //   data-become="9.9/.6"          the element grows past the frame (its fill becomes the next scene)
 //   data-from="#button"           a .flood or iris starts from the centre of that element (at its data-in time)
 //   data-point="#button@9.05"     the element (a cursor) is placed on that element's centre as it is at 9.05 s
@@ -109,9 +112,10 @@
       const walk = (node) => [...node.childNodes].forEach((n) => {
         if (n.nodeType === 3) {
           const frag = document.createDocumentFragment();
-          n.textContent.split(/(\s+)/).forEach((w) => {
+          // split on breaking spaces only: a non-breaking space (&nbsp;) keeps two words in one piece
+          n.textContent.split(/([ \t\n\r]+)/).forEach((w) => {
             if (!w) return;
-            if (/^\s+$/.test(w)) { frag.append(w); return; }
+            if (/^[ \t\n\r]+$/.test(w)) { frag.append(w); return; }
             const s = document.createElement('span'); s.className = 'w'; s.textContent = w;
             s.dataset.in = `wordIn@${(at + (i++) * (step || 0.08)).toFixed(3)}/.6`; frag.append(s);
           });
@@ -183,6 +187,15 @@
     });
   }
 
+  // ---------- drift (data-drift): the slow push that keeps a held beat alive ----------
+  function drift(t) {
+    document.querySelectorAll('[data-drift]').forEach((el) => {
+      const [a, b, to] = el.dataset.drift.split(',').map(Number);
+      const p = Math.max(0, Math.min(1, (t - a) / ((b - a) || 1)));
+      el.style.scale = String(1 + ((to || 1.04) - 1) * p);
+    });
+  }
+
   // ---------- the clock ----------
   function apply(t) {
     // visibility first: an element shown again restarts its animations, which we then set
@@ -192,6 +205,7 @@
     });
     document.getAnimations().forEach((a) => { a.pause(); a.currentTime = t * 1000; });
     camera(t);
+    drift(t);
   }
   window.seek = (t) => {
     compile();

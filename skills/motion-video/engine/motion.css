@@ -25,6 +25,7 @@ img { display: block; max-width: 100%; }
 .display { font: var(--display-weight) 120px/0.98 var(--font-display); letter-spacing: var(--tracking); }
 .h1 { font: var(--display-weight) 96px/1.02 var(--font-display); letter-spacing: var(--tracking); }
 .h2 { font: var(--display-weight) 72px/1.06 var(--font-display); letter-spacing: var(--tracking); }
+.display, .h1, .h2 { text-wrap: balance; }                 /* even lines: no word left alone on the last one */
 .lead { font: 500 40px/1.35 var(--font); color: var(--muted); }
 .label { font: 600 30px/1 var(--font); letter-spacing: .02em; color: var(--muted); }
 .accent { color: var(--accent); } .muted { color: var(--muted); }
