@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 // Start a video project: copies the engine, a style preset and a template into a folder.
-//   node <skill>/scripts/init.mjs <folder> --template app-promo|website-launch|social-ad --style midnight-glow|pastel-pop|bold-type|clean-light|neon-lime|warm-editorial
+//   node <skill>/scripts/init.mjs <folder> --template app-promo|website-launch|social-ad|iso-promo|collage|map-story|parcel-3d|grid-montage --style midnight-glow|pastel-pop|bold-type|clean-light|neon-lime|warm-editorial
 // Then in <folder>: npm install && npx playwright install chromium (once), edit video.html, node engine/render.mjs video.html
 import { cpSync, existsSync, mkdirSync, writeFileSync, readdirSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';

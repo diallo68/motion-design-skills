@@ -1,0 +1,100 @@
+<!doctype html>
+<!-- TEMPLATE parcel-3d · 14.4 s · story / feed / square / landscape — an unboxing in 3D (engine/scene3d.js), for
+     shops, marketplaces and delivery: a parcel drops, shakes, its flaps swing open and the products burst out of it
+     in a fan, then float while the camera turns around the haul. Titles are HTML above the 3D.
+     Beats: 0-3 the drop and the question · 3-7.6 the products come out · 7.7-11.4 the categories roll in one slot ·
+            11.4-14.4 end card.
+     Replace PRODUCTS with the client's real photos (square, product only) and LOGO with their logo
+     (assets/logo.png), which goes on the side of the box. Stand-ins are drawn until then.
+     Needs three.js in the project: npm i three (init.mjs adds it). -->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Parcel 3D</title>
+<link rel="stylesheet" href="engine/motion.css">
+<link rel="stylesheet" href="style.css">
+<style>
+  body { background: linear-gradient(180deg, color-mix(in srgb, var(--accent) 28%, #0B0B14) 0%, color-mix(in srgb, var(--accent) 42%, #0B0B14) 45%, var(--accent) 80%, color-mix(in srgb, var(--accent) 75%, #fff) 100%); color: #fff; --end-bg: #1A1A2E; --end-ink: #fff; }
+  /* dark where the titles sit (top, and the left in landscape), the brand colour glowing under the parcel */
+  .top { z-index: 10; }
+  .h1 { font-size: 88px; color: #fff; text-shadow: 0 8px 30px rgba(0,0,0,.3); } .h1 .d { color: #FFE7A3; }
+  .k { font: 900 96px/1 var(--font); letter-spacing: -.04em; color: #FFE7A3; margin-top: 30px; position: relative; height: 100px; }
+  .k > div { position: absolute; left: 0; right: 0; }
+  body.square .h1 { font-size: 72px; } body.square .k { font-size: 80px; margin-top: 20px; }
+  body.landscape .top { right: 1100px; top: 380px; text-align: left; }
+</style>
+<script type="importmap">{ "imports": { "three": "./node_modules/three/build/three.module.js", "three/addons/": "./node_modules/three/examples/jsm/" } }</script>
+</head>
+<body data-sfx="auto" data-duration="14.4" data-formats="story,feed,square,landscape">
+  <div class="top center" data-out="outBlur@2.9/.2">
+    <div class="h1" data-in="blurIn@.1/.4">What’s <span class="d">inside?</span></div>
+  </div>
+  <div class="top center" data-show="3,7.6" data-out="outBlur@7.4/.2">
+    <div class="h1" data-words="3.05,.1">Everything <span class="d">you’re after</span></div>
+  </div>
+  <div class="top center" data-show="7.7,11.4">
+    <div class="h1" data-in="fadeUp@7.75/.35">Shoes, tech,</div>
+    <!-- one slot, the words roll through on the beat (move 3) -->
+    <div class="k"><div data-show="8.00,8.85" data-in="zoomIn@8.00/.18">lamps</div><div data-show="8.85,9.70" data-in="zoomIn@8.85/.18">watches</div><div data-show="9.70,10.55" data-in="zoomIn@9.70/.18">bikes</div><div data-show="10.55,11.40" data-in="zoomIn@10.55/.18">furniture</div></div>
+  </div>
+
+<script src="engine/motion.js"></script>
+<script>
+  endcard({ at: 11.4, name: 'Stallo', tagline: 'Unbox your town’s market.', cta: 'stallo.app', stores: ['apple', 'google'] });
+  window.SFX = [{ at: 1.1, sfx: 'thud', gain: .6 }, { at: 1.6, sfx: 'thud', gain: .5 }, { at: 2.2, sfx: 'whoosh', gain: .8 }];
+</script>
+<script type="module">
+  import { stage } from './engine/scene3d.js';
+  // The client's real products (img: square photo in assets/) and logo. Without img a stand-in is drawn.
+  const PRODUCTS = [
+    { name: 'Sneakers', hue: 18 }, { name: 'Headphones', hue: 210 }, { name: 'Lamp', hue: 45 }, { name: 'Watch', hue: 160 },
+    { name: 'Backpack', hue: 280 }, { name: 'Camera', hue: 340 }, { name: 'Bike', hue: 120 },
+  ];
+  const LOGO = null;   // 'assets/logo.png'
+  const svg = (body) => 'data:image/svg+xml,' + encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512">${body}</svg>`);
+  const standIn = (p, i) => svg(`<defs><linearGradient id="g" x2="1" y2="1"><stop offset="0" stop-color="hsl(${p.hue} 70% 90%)"/><stop offset="1" stop-color="hsl(${p.hue} 55% 72%)"/></linearGradient></defs><rect width="512" height="512" fill="url(#g)"/>${['<circle cx="256" cy="256" r="140"', '<rect x="126" y="126" width="260" height="260" rx="56"', '<path d="M256 110 L410 400 L102 400 Z"'][i % 3]} fill="hsl(${p.hue} 65% 50%)"/>`);
+  const css = (v) => getComputedStyle(document.body).getPropertyValue(v).trim();
+  const logo = LOGO || svg(`<rect width="512" height="512" rx="90" fill="${css('--accent') || '#2563eb'}"/><text x="256" y="330" text-anchor="middle" font-family="system-ui,sans-serif" font-weight="900" font-size="260" fill="#fff">S</text>`);
+
+  // where the scene sits in each format: under the title, or on the right in landscape
+  const frame = { story: { top: .3, bottom: .97, side: .04 }, feed: { top: .3, bottom: .98, side: .06 }, square: { top: .3, bottom: .98, side: .1 },
+    landscape: { top: .16, bottom: .97, left: .45, right: .97 } }[FORMAT];
+  const s = await stage({ camera: 'perspective', fov: 28, direction: [1, .75, 1.5], light: 'soft', frame });
+  s.zoom(0, .01, { story: 1.2, feed: 1.1, square: 1.05, landscape: .95 }[FORMAT]);   // tighter than the automatic fit: the parcel and the products fill the frame
+  const T = s.THREE, KRAFT = 0xC9935A, KRAFT2 = 0xB98049;
+
+  s.place(s.slab(8, 8, { color: 0xFFF1E6, h: .4 }));
+
+  // the parcel: a box and four flaps hinged on its top edges
+  const box = s.group(), W = 3.2, H = 2.4;
+  box.add(s.block(W, H, W, KRAFT, .06));
+  const label = s.card({ image: logo, w: 1.3, h: 1.3 }); label.position.set(0, H * .5, W / 2 + .02); box.add(label);
+  const flap = (axis, px, pz) => {
+    const hinge = new T.Group(); hinge.position.set(px, H, pz);
+    const f = s.block(axis === 'x' ? W : W / 2, .06, axis === 'x' ? W / 2 : W, KRAFT2, .02);
+    f.position.set(-px / 2, 0, -pz / 2);   // from its hinge toward the middle of the top
+    hinge.add(f); box.add(hinge); return hinge;
+  };
+  const flaps = [flap('x', 0, W / 2), flap('x', 0, -W / 2), flap('z', W / 2, 0), flap('z', -W / 2, 0)];
+  s.place(box, 0, 0, 0, .25);
+  s.drop(box, .2, { dur: .9, height: 9 });
+  // a shake before it opens
+  s.track(box, 1.2, .8, (b, p) => { b.rotation.z += Math.sin(p * Math.PI * 8) * .07 * (1 - p); b.rotation.x += Math.sin(p * Math.PI * 6) * .04 * (1 - p); }, 'linear');
+  // the flaps swing open, a few frames apart
+  [[2.1, 'x'], [-2.1, 'x'], [-2.1, 'z'], [2.1, 'z']].forEach(([by, axis], i) => s.turn(flaps[i], 2.2 + i * .05, { dur: .5, by, axis, ease: 'arrive' }));
+
+  // the products burst out in a fan above the box, then float
+  PRODUCTS.forEach((p, i) => {
+    const k = i - (PRODUCTS.length - 1) / 2, ang = k * .38;
+    const c = s.card({ image: p.img || standIn(p, i), w: 1.55, h: 1.55 });
+    s.place(c, Math.sin(ang) * 3.0, 4.4 + Math.cos(ang) * 1.0 - Math.abs(k) * .3, Math.cos(ang) * .6 + 1.3, .25 - ang * .6);
+    const rest = c.position.clone(), from = new T.Vector3(0, 1.6, 0);
+    s.track(c, 2.7 + i * .22, .7, (b, q) => { b.position.copy(from.clone().lerp(rest, q)); b.scale.multiplyScalar(.25 + .75 * q); b.rotation.z += (1 - q) * 1.4 * (k < 0 ? -1 : 1); }, 'pop', true);
+    s.hover(c, 3.6 + i * .22, 11.4, { amp: .08, period: 2.4 + i * .2 });
+  });
+  s.orbit(3, 8.4, 28);       // the camera turns around the haul
+  s.zoom(7.6, 1.2, 1.12);    // and closes in for the categories
+  s.done();
+</script>
+</body>
+</html>

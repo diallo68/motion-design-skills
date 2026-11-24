@@ -52,8 +52,11 @@ Open `video.html?format=feed&t=4` in a browser to look at any moment while you e
 
 ## What is inside
 
-- **4 templates** (working videos to start from, each passing the check): `app-promo` 15 s, `website-launch` 15 s,
-  `social-ad` 12 s, `iso-promo` 12 s (3D).
+- **8 templates** (working videos to start from, each passing the check in all four formats): `app-promo` 15 s,
+  `website-launch` 15 s, `social-ad` 12 s, `iso-promo` 12 s (3D), and four that put a shop's products forward:
+  `collage` 16 s (photos and price tags on paper), `map-story` 16.4 s (towns light up with real counts on a map;
+  `scripts/geo-outline.mjs` makes the outline from a GeoJSON country or region), `parcel-3d` 14.4 s (an unboxing in 3D),
+  `grid-montage` 13.4 s (a grid cutting on the beat).
 - **6 styles**: `midnight-glow`, `pastel-pop`, `bold-type`, `clean-light`, `neon-lime`, `warm-editorial`.
 - **25 moves** documented with markup in `skills/motion-video/references/moves.md`, including transitions with a
   cause (punch-in camera, object becomes the world, iris from the tap, colour flood, whip) and eases by role.

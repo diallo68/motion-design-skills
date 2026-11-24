@@ -1,0 +1,80 @@
+<!doctype html>
+<!-- TEMPLATE grid-montage · 13.4 s · story / feed / square / landscape — a rhythm montage for shops and catalogues:
+     a grid of cells cuts every 0.4 s between product photos, prices and places, one word at a time over a dark band
+     in the middle, then the cells collapse toward the centre into the end card. The products carry the film.
+     Beats: four words, 2.4 s each (0-9.6) · collapse 9.7-10.2 · end card 10.2-13.4.
+     Replace PRODUCTS with the client's real catalogue (10 or more photos, product only): img, price, place.
+     Stand-in images are drawn until then. With music, set STEP to the beat (0.4 s = 150 bpm, 0.5 s = 120). -->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Grid montage</title>
+<link rel="stylesheet" href="engine/motion.css">
+<link rel="stylesheet" href="style.css">
+<style>
+  body { background: #0B0B12; --end-bg: #0B0B12; --end-ink: #fff; }
+  .grid { position: absolute; inset: 0; display: grid; gap: 8px; padding: 8px; z-index: 1; }
+  .cell { position: relative; overflow: hidden; border-radius: 18px; background: #1A1A2E; }
+  .cell > div { position: absolute; inset: 0; }
+  .cell img { width: 100%; height: 100%; object-fit: cover; }
+  .cell .price, .cell .place { position: absolute; inset: 0; }
+  .cell .price { background: var(--accent); color: var(--accent-ink); display: grid; place-items: center; font: 900 64px/1 var(--font); letter-spacing: -.03em; text-align: center; padding: 10px; }
+  .cell .place { background: #1A1A2E; color: #fff; display: grid; place-items: center; text-align: center; font: 800 44px/1.1 var(--font); }
+  .cell .place span { color: var(--accent); }
+  @keyframes collapse { to { opacity: 0; transform: scale(.2) } }
+  .band { position: absolute; left: 0; right: 0; top: calc(var(--H) / 2 - 230px); height: 460px; z-index: 5; background: linear-gradient(transparent, #0B0B12 20%, #0B0B12 80%, transparent); }
+  .word { position: absolute; left: 70px; right: 150px; top: calc(var(--H) / 2 - 140px); z-index: 6; text-align: center; font: 900 150px/1 var(--font); letter-spacing: -.06em; color: #fff; }
+  .word .o { color: var(--word-accent, var(--accent)); }   /* set --word-accent to a lighter brand tint if the accent is dark */
+  .word.sm { font-size: 112px; top: calc(var(--H) / 2 - 110px); }
+  body:not(.story) .word { left: 70px; right: 70px; }
+  body.square .word { font-size: 130px; top: calc(var(--H) / 2 - 120px); } body.square .word.sm { font-size: 96px; top: calc(var(--H) / 2 - 95px); }
+</style>
+</head>
+<body data-sfx="auto" data-duration="13.4" data-formats="story,feed,square,landscape">
+  <div class="grid" id="grid" data-check="ui"></div>
+  <div class="band" data-in="fadeIn@.1/.3" data-out="fadeOut@9.6/.3"></div>
+  <div class="word" data-show="0,2.4" data-in="zoomIn@.2/.25:arrive">All<span class="o">.</span></div>
+  <div class="word" data-show="2.4,4.8" data-in="zoomIn@2.4/.25:arrive">Nearby<span class="o">.</span></div>
+  <div class="word" data-show="4.8,7.2" data-in="zoomIn@4.8/.25:arrive">Every <span class="o">price.</span></div>
+  <div class="word sm" data-show="7.2,9.8" data-in="zoomIn@7.2/.25:arrive" data-out="outBlur@9.6/.2">On <span class="o">Stallo</span></div>
+<script>
+  // The client's real products: img (photo in assets/), price, place. Without img a stand-in is drawn.
+  const PRODUCTS = [
+    { name: 'Sneakers', price: '$89', place: 'Calden', hue: 18 }, { name: 'Headphones', price: '$59', place: 'Mereth', hue: 210 },
+    { name: 'Lamp', price: '$35', place: 'Calden', hue: 45 }, { name: 'Watch', price: '$120', place: 'Port Ula', hue: 160 },
+    { name: 'Backpack', price: '$45', place: 'Ashby', hue: 280 }, { name: 'Camera', price: '$310', place: 'Calden', hue: 340 },
+    { name: 'Perfume', price: '$70', place: 'Varn', hue: 300 }, { name: 'Bike', price: '$260', place: 'Mereth', hue: 120 },
+    { name: 'Sofa', price: '$480', place: 'Tolle', hue: 25 }, { name: 'Plant', price: '$18', place: 'Ashby', hue: 95 },
+    { name: 'Speaker', price: '$75', place: 'Calden', hue: 230 }, { name: 'Jacket', price: '$95', place: 'Varn', hue: 0 },
+  ];
+  const standIn = (p, i) => 'data:image/svg+xml,' + encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" width="600" height="600"><defs><linearGradient id="g" x2="1" y2="1"><stop offset="0" stop-color="hsl(${p.hue} 70% 90%)"/><stop offset="1" stop-color="hsl(${p.hue} 55% 72%)"/></linearGradient></defs><rect width="600" height="600" fill="url(#g)"/>${['<circle cx="300" cy="340" r="150"', '<rect x="160" y="200" width="280" height="280" rx="60"', '<path d="M300 180 L460 480 L140 480 Z"'][i % 3]} fill="hsl(${p.hue} 65% 50%)"/><text x="300" y="110" text-anchor="middle" font-family="system-ui,sans-serif" font-weight="800" font-size="64" fill="hsl(${p.hue} 50% 20%)">${p.name}</text></svg>`);
+  const photo = (p, i) => p.img || standIn(p, i);
+
+  const F = new URLSearchParams(location.search).get('format') || document.body.dataset.format || 'story';
+  const [COLS, ROWS] = { story: [3, 5], feed: [3, 4], square: [3, 3], landscape: [5, 3] }[F];
+  const grid = document.getElementById('grid');
+  grid.style.gridTemplateColumns = `repeat(${COLS}, 1fr)`; grid.style.gridTemplateRows = `repeat(${ROWS}, 1fr)`;
+  // each cell cuts every STEP seconds, offset by its position, between a photo (3 in 5), its price and its place
+  const STEP = .4, END = 9.6, N = COLS * ROWS; let h = '';
+  for (let c = 0; c < N; c++) {
+    let cell = '';
+    for (let k = 0, t = 0; t < END - 1e-6; k++, t += STEP) {
+      const i = (c * 5 + k * 7) % PRODUCTS.length, p = PRODUCTS[i], kind = (c + k) % 5;
+      const inner = kind === 3 ? `<div class="price">${p.price}</div>` : kind === 4 ? `<div class="place"><div>${icon('pin').replace('<svg', '<svg width="56" height="56"')}<br><span>${p.place}</span></div></div>` : `<img src="${photo(p, i)}" alt="">`;
+      cell += `<div data-show="${t.toFixed(2)},${(t + STEP >= END - 1e-6 ? END + 1 : t + STEP).toFixed(2)}">${inner}</div>`;   // the last one holds until the collapse
+    }
+    // cells collapse toward the centre, the middle one last
+    const d = Math.abs((c % COLS) - (COLS - 1) / 2) + Math.abs(Math.floor(c / COLS) - (ROWS - 1) / 2);
+    h += `<div class="cell" data-out="collapse@${(9.7 + (3 - Math.min(d, 3)) * .08).toFixed(2)}/.35:leave">${cell}</div>`;
+  }
+  grid.innerHTML = h;
+  // a tap on every cut, a stronger one every sixth: the rhythm is the film
+  window.SFX = Array.from({ length: Math.round(END / STEP) - 1 }, (_, i) => ({ at: +(STEP * (i + 1)).toFixed(2), sfx: 'tap', gain: i % 6 === 5 ? .45 : .2 }));
+  function icon(n) { return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-7-6.2-7-11.5a7 7 0 0 1 14 0C19 14.8 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.5"/></svg>'; }
+</script>
+<script src="engine/motion.js"></script>
+<script>
+  endcard({ at: 10.2, name: 'Stallo', tagline: 'Buy and sell near you.', cta: 'stallo.app', stores: ['apple', 'google'] });
+</script>
+</body>
+</html>
