@@ -52,19 +52,29 @@ Open `video.html?format=feed&t=4` in a browser to look at any moment while you e
 
 ## What is inside
 
-- **8 templates** (working videos to start from, each passing the check in all four formats): `app-promo` 15 s,
+- **8 templates** (working structures to start from, each passing the check in all four formats, their words as
+  `[placeholders]` that name their role, so no template is already an ad for a sector): `app-promo` 15 s,
   `website-launch` 15 s, `social-ad` 12 s, `iso-promo` 12 s (3D), and four that put a shop's products forward:
   `collage` 16 s (photos and price tags on paper), `map-story` 16.4 s (towns light up with real counts on a map;
   `scripts/geo-outline.mjs` makes the outline from a GeoJSON country or region), `parcel-3d` 14.4 s (an unboxing in 3D),
   `grid-montage` 13.4 s (a grid cutting on the beat).
 - **6 styles**: `midnight-glow`, `pastel-pop`, `bold-type`, `clean-light`, `neon-lime`, `warm-editorial`.
-- **25 moves** documented with markup in `skills/motion-video/references/moves.md`, including transitions with a
-  cause (punch-in camera, object becomes the world, iris from the tap, colour flood, whip) and eases by role.
+- **28 moves** documented with markup in `skills/motion-video/references/moves.md`, including transitions with a
+  cause (punch-in camera, object becomes the world, iris from the tap, colour flood, whip), the UI acting (a
+  finger picks an answer, a chat writes itself, progress fills), the slow push that keeps every beat alive, and
+  eases by role.
+- **A concept step and a critique loop**: two concepts offered before any code (the message, the viewer's problem,
+  the product's answer shown, the visual idea, the proof), then the film scored on six criteria from sheets at four
+  frames a second around each transition, and revised until every score reaches 4.
 - **An engine** of plain CSS keyframes and `data-` attributes (`data-in="fadeUp@1.2"`, `data-words`,
   `data-ticker`, `data-count`, `data-type`…), and a deterministic renderer (Playwright + ffmpeg).
 - **A quality check** (`check.mjs`) that plays the video and measures every line of text every 0.1 s in every
   format: platform safe zones (Reels, TikTok, Shorts), text off the frame, cut, overlapping or covered, time to
-  read, contrast, letter size, crowding, end-card length, missing files.
+  read, contrast, letter size, crowding, end-card length, missing files; frozen frames (`dead-time`), beats where
+  one thing enters, a device or picture over a line, a title ending on one word, and template text left in the
+  video.
+- **Final-quality renders**: `--scale 2` supersampling (3D included), `--motion-blur 4`, frames passed to x264
+  losslessly.
 - **Helpers**: `capture-app.mjs` captures the real app from an Android emulator or device or an iOS simulator,
   with the system bars cropped off; `capture.mjs` captures a live site for the browser frame.
 

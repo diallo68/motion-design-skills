@@ -1,4 +1,4 @@
 schema_version: "1.1"
 name: website-launch-voiceover
 expected_outcome: |
-  A website launch video of 10-20 s in landscape (1920x1080) and story (1080x1920), rendered to MP4 with a French voice-over that is audible, each line finishing before the next. The site shown is a stand-in (there is no live site), the URL lefournil.example appears, the offer (order online, pick up in Ratoma) is clear.
+  A website launch video of 10-20 s in landscape (1920x1080) and story (1080x1920), rendered to MP4 with a French voice-over that is audible, each line finishing before the next. The site shown is a stand-in (there is no live site), the URL lefournil.example appears, the offer (order online, pick up in Ratoma) is clear. The video starts from a written concept, keeps the frame moving (no dead-time), and keeps no template text or [placeholder].

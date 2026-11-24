@@ -1,4 +1,4 @@
 schema_version: "1.1"
 name: app-promo-reels-feed
 expected_outcome: |
-  An app promo of about 15 s (13-17 s) in story (1080x1920) and feed (1080x1350), in French, rendered to MP4. Kora's orange and cream colours, the three promises (3 taps, 30 minutes, Wave or Orange Money), Android shown as coming soon (not as available), illustrative screens marked as such, text clear of the Reels buttons and held long enough to read.
+  An app promo of about 15 s (13-17 s) in story (1080x1920) and feed (1080x1350), in French, rendered to MP4. Kora's orange and cream colours, the three promises (3 taps, 30 minutes, Wave or Orange Money), Android shown as coming soon (not as available), illustrative screens marked as such, text clear of the Reels buttons and held long enough to read. The video starts from a written concept, keeps the frame moving (no dead-time), and keeps no template text or [placeholder].

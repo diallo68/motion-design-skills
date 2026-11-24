@@ -5,7 +5,8 @@
      Beats: 0-5.6 hook + three products · 5.7-11 the promise + three more · 11-13.3 the question and the stamp
             (the action) · 13.3-16 end card.
      Replace PRODUCTS with the client's real photos (square crops, product only, no people): img, price, place.
-     Stand-in images are drawn until then. -->
+     Stand-in images are drawn until then.
+     Words in [brackets] name their role: write each from the client's concept (check.mjs reports any left). -->
 <html lang="en">
 <head>
 <meta charset="utf-8">
@@ -21,7 +22,7 @@
       radial-gradient(circle at 20% 30%, rgba(255,255,255,.35), transparent 40%),
       radial-gradient(circle at 80% 70%, rgba(120,80,30,.12), transparent 45%),
       repeating-linear-gradient(0deg, rgba(120,90,50,.035) 0 2px, transparent 2px 6px); }
-  .title { position: absolute; left: 80px; right: 200px; top: 300px; z-index: 10; font: 400 112px/1 "Permanent Marker", cursive; color: #1A1A2E; transform: rotate(var(--r)); }
+  .title { position: absolute; left: 80px; right: 200px; top: 320px; z-index: 10; font: 400 112px/1 "Permanent Marker", cursive; color: #1A1A2E; transform: rotate(var(--r)); }
   .title .o { color: var(--marker); }
   body.feed .title { top: 130px; font-size: 92px; } body.square .title { top: 104px; font-size: 76px; right: 90px; }
   body.landscape .title { left: 110px; right: 1160px; top: 330px; font-size: 96px; }
@@ -46,18 +47,19 @@
 <body data-sfx="auto" data-duration="16" data-formats="story,feed,square,landscape">
   <div class="paper"></div>
 
-  <div class="title" style="--r:-3deg" data-show="0,5.6" data-in="slap@.1/.45" data-out="peel@5.4/.3">Found on <span class="o">Stallo</span></div>
-  <div class="title" style="--r:2deg" data-show="5.7,11" data-in="slap@5.75/.45" data-out="peel@10.8/.3">All of it. <span class="o">Fair prices.</span></div>
-  <div id="board"></div>
-  <div class="title" style="--r:-2deg" data-show="11,13.3" data-in="slap@11.05/.4">What are <span class="o">you after?</span></div>
-  <div class="stamp" data-show="11.6,13.3" data-in="stampIn@11.7/.35">Just ask<br>stallo.app</div>
+  <div class="title" style="--r:-3deg" data-show="0,5.6" data-in="slap@.1/.45" data-out="peel@5.4/.3">[Hook] <span class="o">[Name]</span></div>
+  <div class="title" style="--r:2deg" data-show="5.7,11" data-in="slap@5.75/.45" data-out="peel@10.8/.3">[Promise] <span class="o">[Proof]</span></div>
+  <!-- the camera pushes slowly into the table through both waves, so the frame never freezes between stickers -->
+  <div id="board" style="position:absolute;inset:0" data-drift="1.2,10.8,1.05"></div>
+  <div class="title" style="--r:-2deg" data-show="11,13.3" data-in="slap@11.05/.4">[Question] <span class="o">[to&nbsp;the&nbsp;viewer]</span></div>
+  <div class="stamp" data-show="11.6,13.3" data-in="stampIn@11.7/.35" data-drift="12,13.3,1.05">[The&nbsp;answer]<br>[Address]</div>
 
 <script>
   // The client's real products: img (square photo in assets/), price, place. Without img a stand-in is drawn.
   const PRODUCTS = [
-    { name: 'Sneakers', price: '$89', place: 'Calden', hue: 18 }, { name: 'Headphones', price: '$59', place: 'Mereth', hue: 210 },
-    { name: 'Lamp', price: '$35', place: 'Calden', hue: 45 }, { name: 'Watch', price: '$120', place: 'Port Ula', hue: 160 },
-    { name: 'Backpack', price: '$45', place: 'Ashby', hue: 280 }, { name: 'Camera', price: '$310', place: 'Calden', hue: 340 },
+    { name: '[Product]', price: '[Price]', place: '[Place]', hue: 18 }, { name: '[Product]', price: '[Price]', place: '[Place]', hue: 210 },
+    { name: '[Product]', price: '[Price]', place: '[Place]', hue: 45 }, { name: '[Product]', price: '[Price]', place: '[Place]', hue: 160 },
+    { name: '[Product]', price: '[Price]', place: '[Place]', hue: 280 }, { name: '[Product]', price: '[Price]', place: '[Place]', hue: 340 },
   ];
   const standIn = (p, i) => 'data:image/svg+xml,' + encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" width="600" height="600"><defs><linearGradient id="g" x2="1" y2="1"><stop offset="0" stop-color="hsl(${p.hue} 70% 90%)"/><stop offset="1" stop-color="hsl(${p.hue} 55% 72%)"/></linearGradient></defs><rect width="600" height="600" fill="url(#g)"/>${['<circle cx="300" cy="340" r="150"', '<rect x="160" y="200" width="280" height="280" rx="60"', '<path d="M300 180 L460 480 L140 480 Z"'][i % 3]} fill="hsl(${p.hue} 65% 50%)"/><text x="300" y="110" text-anchor="middle" font-family="system-ui,sans-serif" font-weight="800" font-size="64" fill="hsl(${p.hue} 50% 20%)">${p.name}</text></svg>`);
   const photo = (p, i) => p.img || standIn(p, i);
@@ -83,7 +85,7 @@
 </script>
 <script src="engine/motion.js"></script>
 <script>
-  endcard({ at: 13.3, name: 'Stallo', tagline: 'Buy and sell near you.', cta: 'stallo.app', stores: ['apple', 'google'] });
+  endcard({ at: 13.3, name: '[Name]', tagline: '[The promise, in one line]', cta: '[Address]', stores: ['apple', 'google'] });
 </script>
 </body>
 </html>

@@ -4,7 +4,8 @@
      in the middle, then the cells collapse toward the centre into the end card. The products carry the film.
      Beats: four words, 2.4 s each (0-9.6) · collapse 9.7-10.2 · end card 10.2-13.4.
      Replace PRODUCTS with the client's real catalogue (10 or more photos, product only): img, price, place.
-     Stand-in images are drawn until then. With music, set STEP to the beat (0.4 s = 150 bpm, 0.5 s = 120). -->
+     Stand-in images are drawn until then. With music, set STEP to the beat (0.4 s = 150 bpm, 0.5 s = 120).
+     Words in [brackets] name their role: write each from the client's concept (check.mjs reports any left). -->
 <html lang="en">
 <head>
 <meta charset="utf-8">
@@ -33,19 +34,19 @@
 <body data-sfx="auto" data-duration="13.4" data-formats="story,feed,square,landscape">
   <div class="grid" id="grid" data-check="ui"></div>
   <div class="band" data-in="fadeIn@.1/.3" data-out="fadeOut@9.6/.3"></div>
-  <div class="word" data-show="0,2.4" data-in="zoomIn@.2/.25:arrive">All<span class="o">.</span></div>
-  <div class="word" data-show="2.4,4.8" data-in="zoomIn@2.4/.25:arrive">Nearby<span class="o">.</span></div>
-  <div class="word" data-show="4.8,7.2" data-in="zoomIn@4.8/.25:arrive">Every <span class="o">price.</span></div>
-  <div class="word sm" data-show="7.2,9.8" data-in="zoomIn@7.2/.25:arrive" data-out="outBlur@9.6/.2">On <span class="o">Stallo</span></div>
+  <div class="word" data-show="0,2.4" data-in="zoomIn@.2/.25:arrive">[Word]<span class="o">.</span></div>
+  <div class="word" data-show="2.4,4.8" data-in="zoomIn@2.4/.25:arrive">[Word]<span class="o">.</span></div>
+  <div class="word" data-show="4.8,7.2" data-in="zoomIn@4.8/.25:arrive">[Two] <span class="o">[words]</span></div>
+  <div class="word sm" data-show="7.2,9.8" data-in="zoomIn@7.2/.25:arrive" data-out="outBlur@9.6/.2"><span class="o">[Name]</span></div>
 <script>
   // The client's real products: img (photo in assets/), price, place. Without img a stand-in is drawn.
   const PRODUCTS = [
-    { name: 'Sneakers', price: '$89', place: 'Calden', hue: 18 }, { name: 'Headphones', price: '$59', place: 'Mereth', hue: 210 },
-    { name: 'Lamp', price: '$35', place: 'Calden', hue: 45 }, { name: 'Watch', price: '$120', place: 'Port Ula', hue: 160 },
-    { name: 'Backpack', price: '$45', place: 'Ashby', hue: 280 }, { name: 'Camera', price: '$310', place: 'Calden', hue: 340 },
-    { name: 'Perfume', price: '$70', place: 'Varn', hue: 300 }, { name: 'Bike', price: '$260', place: 'Mereth', hue: 120 },
-    { name: 'Sofa', price: '$480', place: 'Tolle', hue: 25 }, { name: 'Plant', price: '$18', place: 'Ashby', hue: 95 },
-    { name: 'Speaker', price: '$75', place: 'Calden', hue: 230 }, { name: 'Jacket', price: '$95', place: 'Varn', hue: 0 },
+    { name: '[Product]', price: '[Price]', place: '[Place]', hue: 18 }, { name: '[Product]', price: '[Price]', place: '[Place]', hue: 210 },
+    { name: '[Product]', price: '[Price]', place: '[Place]', hue: 45 }, { name: '[Product]', price: '[Price]', place: '[Place]', hue: 160 },
+    { name: '[Product]', price: '[Price]', place: '[Place]', hue: 280 }, { name: '[Product]', price: '[Price]', place: '[Place]', hue: 340 },
+    { name: '[Product]', price: '[Price]', place: '[Place]', hue: 300 }, { name: '[Product]', price: '[Price]', place: '[Place]', hue: 120 },
+    { name: '[Product]', price: '[Price]', place: '[Place]', hue: 25 }, { name: '[Product]', price: '[Price]', place: '[Place]', hue: 95 },
+    { name: '[Product]', price: '[Price]', place: '[Place]', hue: 230 }, { name: '[Product]', price: '[Price]', place: '[Place]', hue: 0 },
   ];
   const standIn = (p, i) => 'data:image/svg+xml,' + encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" width="600" height="600"><defs><linearGradient id="g" x2="1" y2="1"><stop offset="0" stop-color="hsl(${p.hue} 70% 90%)"/><stop offset="1" stop-color="hsl(${p.hue} 55% 72%)"/></linearGradient></defs><rect width="600" height="600" fill="url(#g)"/>${['<circle cx="300" cy="340" r="150"', '<rect x="160" y="200" width="280" height="280" rx="60"', '<path d="M300 180 L460 480 L140 480 Z"'][i % 3]} fill="hsl(${p.hue} 65% 50%)"/><text x="300" y="110" text-anchor="middle" font-family="system-ui,sans-serif" font-weight="800" font-size="64" fill="hsl(${p.hue} 50% 20%)">${p.name}</text></svg>`);
   const photo = (p, i) => p.img || standIn(p, i);
@@ -74,7 +75,7 @@
 </script>
 <script src="engine/motion.js"></script>
 <script>
-  endcard({ at: 10.2, name: 'Stallo', tagline: 'Buy and sell near you.', cta: 'stallo.app', stores: ['apple', 'google'] });
+  endcard({ at: 10.2, name: '[Name]', tagline: '[The promise, in one line]', cta: '[Address]', stores: ['apple', 'google'] });
 </script>
 </body>
 </html>

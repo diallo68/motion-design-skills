@@ -10,7 +10,9 @@ the beats. Times are examples.
 9. Typing · 10. Counter · 11. Bars and progress · 12. Fan of screens · 13. Cards stack · 14. Browser launch ·
 15. Glow and mesh grounds · 16. Big type takeover · 17. Marquee band · 18. End card ·
 **Transitions and camera:** 19. Punch-in · 20. Object becomes the world · 21. Iris from the tap ·
-22. Colour flood · 23. Whip · 24. Blur swap · 25. Dip cut · **Timing:** eases by role, holds, what looks generated
+22. Colour flood · 23. Whip · 24. Blur swap · 25. Dip cut · **The UI acts:** 26. A finger picks an answer ·
+27. A chat writes itself · 28. Progress fills · **Timing:** the slow push by default, eases by role, holds, what
+looks generated
 
 ---
 
@@ -46,8 +48,8 @@ The slot's width follows the word on show. Last word stays. 0.5–0.8 s per word
 
 ### 5. Floating device (optional, sparingly)
 `data-loop="float/4"` (straight) or `data-loop="floatTilt/5"` (after `tiltIn`). Slow and small: the eye should
-feel it, not watch it. A float standing in for motion reads as a template: prefer the UI acting (a screen
-changing, a value counting) or the camera moving (19). Never on text: `check` warns `moving-text`.
+feel it, not watch it. A float standing in for motion reads as a template: prefer the UI acting (26–28), a slow
+push (`data-drift`, Timing) or the camera moving (19). Never on text: `check` warns `moving-text`.
 
 ### 6. Screen sequence in one phone
 Several screens inside one `.screen`, each with `data-show="a,b"`. Change screens on the beat where the headline
@@ -165,15 +167,62 @@ just before the cut.
 
 ---
 
+## The UI acts
+
+The product doing its job is the strongest proof an ad has: show it working, step by step, inside the device. A
+beat where the UI acts needs no float, no ring and no chip: the screen itself is the motion.
+
+### 26. A finger picks an answer
+No cursor on a phone: the row is pressed, then answers (right in green with a tick, or the next screen).
+```html
+<div class="opt" data-in="press@6.2/.3">1958
+  <span class="opt ok" style="position:absolute;inset:0" data-in="fadeIn@6.4/.2">1958 <span data-in="pop@6.45/.35">CHECK</span></span>
+</div>
+<div class="feedback" data-in="fadeUp@6.7/.4">Correct · +10 pts</div>
+```
+Press, then colour, then the tick pops, then the feedback line: four changes in a second. Give `.opt` a
+`position: relative`; the answer state lies over the row so the change does not move the layout.
+
+### 27. A chat writes itself
+The question types, three dots wait, the reply arrives word by word:
+```html
+<div class="me" data-in="fadeUp@8.2/.35"><span data-type="8.3,30">Explain fractions simply</span></div>
+<div class="bot" data-show="9.4,9.9" data-in="fadeIn@9.4/.2"><span class="dots">• • •</span></div>
+<div class="bot" data-show="9.9,99" data-words="9.95,.05">A fraction is a part of a whole: 3/4 is three parts of four.</div>
+```
+Keep the reply short enough to read (0.3 s a word). The typing speed (30 characters a second) reads as fast but
+human; the dots last 0.5 s. Mark the device `data-check="ui"`; when the exchange is invented, the `.disclaimer`.
+
+### 28. Progress fills
+A value that grows while the line holds: a bar (`grow` with `transform-origin: left`), a ring, a count.
+```html
+<div class="bar"><i data-in="grow@5.2/1.6:move" style="width:72%"></i></div>
+<b data-count="0,72,5.2,1.6">72</b> %
+```
+Count and bar share the same start and length, so the number and the fill move as one. Only real numbers in ads,
+or a progress that is plainly the viewer's (a lesson, a delivery).
+
+---
+
 ## Timing
+
+- **The slow push, by default.** A landed line holds still, but the frame does not: put `data-drift="a,b"` on the
+  scene, the device or its wrapper for each beat (scale 1 → 1.04, linear, over the beat; `"a,b,1.06"` for more).
+  It adds to the entrance, the camera and the format's scale, because it uses the CSS `scale` property. Skip it
+  only where something else moves through the whole beat (the UI acting, a camera move, a 3D orbit, a typing
+  line). Put it on what fills the beat: the scene, the device, or the beat's block when the beat is type alone
+  (a slow push on a headline reads as a camera, a float reads as a template). `check` reports `dead-time` when no
+  pixel changes for more than 0.8 s.
 
 - **Eases by role** (default, or name one after the time: `fadeUp@1/.8:move`): entrances `arrive` (long tail),
   exits `leave` (accelerating), floods, irises and camera moves `move` (both ways), pops `pop`. The same ease on
   everything is what makes a film feel generated.
 - **Exits are about half the entrance**: entrances 0.5–0.9 s, exits 0.2–0.4 s (default 0.4). The next element
   starts when the previous one is 30–50 % done.
-- **A landed line holds still.** Motion moves to the next element, the camera or the ground.
+- **A landed line holds still.** Motion moves to the next element, the camera (the slow push) or the ground.
 - **Vary the entrances**: words one by one, a blur-in, a mask, a whip, a pop for a number. `check` warns
   `same-entrance` when 70 % of the texts enter the same way.
+- **One thing at a time, but always one thing.** A beat of more than 3.5 s needs a second event (a value, a
+  press, a reply, a punch-in): `check` warns `long-beat`.
 - **What looks generated**: floating or pulsing loops on UI and titles, tap rings, every element fading and
-  sliding up, every scene entering the same way.
+  sliding up, every scene entering the same way, a frozen frame while a line is read.

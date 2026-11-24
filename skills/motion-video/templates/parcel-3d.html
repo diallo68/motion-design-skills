@@ -6,7 +6,8 @@
             11.4-14.4 end card.
      Replace PRODUCTS with the client's real photos (square, product only) and LOGO with their logo
      (assets/logo.png), which goes on the side of the box. Stand-ins are drawn until then.
-     Needs three.js in the project: npm i three (init.mjs adds it). -->
+     Needs three.js in the project: npm i three (init.mjs adds it).
+     Words in [brackets] name their role: write each from the client's concept (check.mjs reports any left). -->
 <html lang="en">
 <head>
 <meta charset="utf-8">
@@ -27,34 +28,34 @@
 </head>
 <body data-sfx="auto" data-duration="14.4" data-formats="story,feed,square,landscape">
   <div class="top center" data-out="outBlur@2.9/.2">
-    <div class="h1" data-in="blurIn@.1/.4">What’s <span class="d">inside?</span></div>
+    <div class="h1" data-in="blurIn@.1/.4">[The question] <span class="d">[it opens]</span></div>
   </div>
   <div class="top center" data-show="3,7.6" data-out="outBlur@7.4/.2">
-    <div class="h1" data-words="3.05,.1">Everything <span class="d">you’re after</span></div>
+    <div class="h1" data-words="3.05,.1">[The answer] <span class="d">[in its words]</span></div>
   </div>
   <div class="top center" data-show="7.7,11.4">
-    <div class="h1" data-in="fadeUp@7.75/.35">Shoes, tech,</div>
+    <div class="h1" data-in="fadeUp@7.75/.35">[Type], [Type],</div>
     <!-- one slot, the words roll through on the beat (move 3) -->
-    <div class="k"><div data-show="8.00,8.85" data-in="zoomIn@8.00/.18">lamps</div><div data-show="8.85,9.70" data-in="zoomIn@8.85/.18">watches</div><div data-show="9.70,10.55" data-in="zoomIn@9.70/.18">bikes</div><div data-show="10.55,11.40" data-in="zoomIn@10.55/.18">furniture</div></div>
+    <div class="k"><div data-show="8.00,8.85" data-in="zoomIn@8.00/.18">[Category]</div><div data-show="8.85,9.70" data-in="zoomIn@8.85/.18">[Category]</div><div data-show="9.70,10.55" data-in="zoomIn@9.70/.18">[Category]</div><div data-show="10.55,11.40" data-in="zoomIn@10.55/.18">[All]</div></div>
   </div>
 
 <script src="engine/motion.js"></script>
 <script>
-  endcard({ at: 11.4, name: 'Stallo', tagline: 'Unbox your town’s market.', cta: 'stallo.app', stores: ['apple', 'google'] });
+  endcard({ at: 11.4, name: '[Name]', tagline: '[The promise, in one line]', cta: '[Address]', stores: ['apple', 'google'] });
   window.SFX = [{ at: 1.1, sfx: 'thud', gain: .6 }, { at: 1.6, sfx: 'thud', gain: .5 }, { at: 2.2, sfx: 'whoosh', gain: .8 }];
 </script>
 <script type="module">
   import { stage } from './engine/scene3d.js';
   // The client's real products (img: square photo in assets/) and logo. Without img a stand-in is drawn.
   const PRODUCTS = [
-    { name: 'Sneakers', hue: 18 }, { name: 'Headphones', hue: 210 }, { name: 'Lamp', hue: 45 }, { name: 'Watch', hue: 160 },
-    { name: 'Backpack', hue: 280 }, { name: 'Camera', hue: 340 }, { name: 'Bike', hue: 120 },
+    { name: '[Product]', hue: 18 }, { name: '[Product]', hue: 210 }, { name: '[Product]', hue: 45 }, { name: '[Product]', hue: 160 },
+    { name: '[Product]', hue: 280 }, { name: '[Product]', hue: 340 }, { name: '[Product]', hue: 120 },
   ];
   const LOGO = null;   // 'assets/logo.png'
   const svg = (body) => 'data:image/svg+xml,' + encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512">${body}</svg>`);
   const standIn = (p, i) => svg(`<defs><linearGradient id="g" x2="1" y2="1"><stop offset="0" stop-color="hsl(${p.hue} 70% 90%)"/><stop offset="1" stop-color="hsl(${p.hue} 55% 72%)"/></linearGradient></defs><rect width="512" height="512" fill="url(#g)"/>${['<circle cx="256" cy="256" r="140"', '<rect x="126" y="126" width="260" height="260" rx="56"', '<path d="M256 110 L410 400 L102 400 Z"'][i % 3]} fill="hsl(${p.hue} 65% 50%)"/>`);
   const css = (v) => getComputedStyle(document.body).getPropertyValue(v).trim();
-  const logo = LOGO || svg(`<rect width="512" height="512" rx="90" fill="${css('--accent') || '#2563eb'}"/><text x="256" y="330" text-anchor="middle" font-family="system-ui,sans-serif" font-weight="900" font-size="260" fill="#fff">S</text>`);
+  const logo = LOGO || svg(`<rect width="512" height="512" rx="90" fill="${css('--accent') || '#2563eb'}"/><text x="256" y="330" text-anchor="middle" font-family="system-ui,sans-serif" font-weight="900" font-size="260" fill="#fff">?</text>`);
 
   // where the scene sits in each format: under the title, or on the right in landscape
   const frame = { story: { top: .3, bottom: .97, side: .04 }, feed: { top: .3, bottom: .98, side: .06 }, square: { top: .3, bottom: .98, side: .1 },
@@ -93,7 +94,8 @@
     s.hover(c, 3.6 + i * .22, 11.4, { amp: .08, period: 2.4 + i * .2 });
   });
   s.orbit(3, 8.4, 28);       // the camera turns around the haul
-  s.zoom(7.6, 1.2, 1.12);    // and closes in for the categories
+  s.zoom(5.6, .8, 1.06);     // a first step in while the products float
+  s.zoom(7.6, 1.2, 1.06);    // and closer for the categories
   s.done();
 </script>
 </body>

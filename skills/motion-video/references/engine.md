@@ -21,6 +21,7 @@ A video is an HTML page that links `engine/motion.css`, `style.css`, then loads 
 | `data-ticker` | `2,1.4` | roll child `<span>`s every 1.4 s from 2 s |
 | `data-tap` | `5.2` | tap ring at 5.2 s (on a `.tap` element) |
 | `data-cam` | `2/.6 1.8 0 -240; 4/.5 1 0 0` | camera on a `.cam` wrapper: states `at/duration scale x y [ease]` in order |
+| `data-drift` | `2.4,6.3`, `2.4,6.3,1.06` | slow push from 2.4 s to 6.3 s, scale 1 → 1.04 (or the third value), linear; CSS `scale`, so it adds to other transforms |
 | `data-become` | `9.9/.6` | grows past the frame (measured on its start frame); its fill becomes the next ground |
 | `data-point` | `#go@9.05` | places the element (a cursor) on that element's centre as it is at that time |
 | `data-from` | `#go` | an `iris` on a `.flood` starts from that element's centre |
@@ -93,14 +94,27 @@ effects to 70 % and ducks the music about 11 dB while someone speaks. `check` re
 ## Check (`node engine/check.mjs video.html`)
 Rules, each reported with a time range, the element and a fix: `safe-zone` (story: text inside x 60–960, y 270–1250,
 clear of the Reels/TikTok/Shorts buttons and caption; other formats: a 5 % margin), `off-frame`, `cut-off`,
-`overlap`, `covered`, `read-time` (0.5 s + 0.3 s a word), `last-line` (2 s), `end-card` (2.5 s), `small-text`
-(2.6 % of the short side, 20 px for small print), `contrast` (3:1 at least), `crowded` (over 18 words at once),
-`never-shown`, `load`, and motion warnings `moving-text` (a loop on text), `same-entrance`, `tap-ring`. Errors make the exit code 1. `--format story` checks one format, `--json` prints findings.
+`overlap`, `covered`, `object-over-text` (a device, card, chip or picture over 15 % of five probes along a line),
+`read-time` (0.5 s + 0.3 s a word), `last-line` (2 s), `end-card` (2.5 s), `small-text` (2.6 % of the short side,
+20 px for small print), `contrast` (3:1 at least), `crowded` (over 18 words at once), `never-shown`, `load`,
+`dead-time` (no pixel changes for more than 0.8 s before the end card, or before the last 2 s without one),
+`template-leftover` (a phrase of the template the video started from, or a `[Placeholder]`, still in the page:
+`init.mjs` records the template's phrases in `engine/template.json`), and warnings `long-beat` (more than 3.5 s
+with nothing new entering), `orphan` (a title of 56 px or more whose last line is one word), `moving-text` (a loop
+on text), `same-entrance`, `tap-ring`. Errors make the exit code 1. `--format story` checks one format, `--json`
+prints findings. A check takes about a minute a format: it captures a frame every 0.1 s for `dead-time`.
 
 `data-check` on an element (inherited by its children): `ignore` never checked · `ui` app or site UI that is not
 read as a line (`.phone` and `.browser` content is treated so already) · `note` small print such as
 `.disclaimer` and store-badge captions · `overlap` a designed overlap. · `beat` a one- or two-word line cut on the rhythm
 (kinetic type), allowed to hold 0.4 s.
+
+## Render options (`node engine/render.mjs video.html`)
+`--format story,feed` · `--still 4.2` (one PNG) · `--sheet` (one frame a second), `--sheet --every 0.25 --from 4
+--to 7` (a finer sheet around a transition, each cell stamped with its time) · `--fps 30` · `--scale 2` (rendered
+at twice the size and scaled down with lanczos: supersampling, 3D included) · `--motion-blur 4` (four sub-frames
+over half the frame interval, blended: a 180° shutter) · `--audio`, `--music-volume`, `--sfx off`, `--voice` ·
+`--out dir`. Frames go to x264 as PNG, so the MP4 is compressed once; deliver it without re-encoding.
 
 ## Rules that keep frames exact
 - Everything that moves must be a CSS animation or computed in `seek`/`onSeek` from `t`. No `setTimeout`,

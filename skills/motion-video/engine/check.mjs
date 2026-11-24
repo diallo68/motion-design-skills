@@ -8,19 +8,25 @@
 //   node check.mjs video.html --step 0.05        finer sampling (default 0.1 s)
 //
 // Exit code 1 when there is at least one error. Rules: safe-zone, off-frame, cut-off, overlap, covered,
-// read-time, last-line, end-card, small-text, contrast, crowded, never-shown, load; motion warnings moving-text,
-// same-entrance, tap-ring.
+// object-over-text, read-time, last-line, end-card, small-text, contrast, crowded, never-shown, load,
+// template-leftover; motion: dead-time (nothing on screen changes for more than 0.8 s), long-beat, orphan,
+// moving-text, same-entrance, tap-ring.
 // Opt-outs on any element: data-check="ignore" (never checked), "ui" (app or site UI inside a device: not read),
 // "note" (small print such as the disclaimer: no read-time, safe-zone or contrast rule), "overlap" (meant to overlap),
 // "beat" (a one- or two-word line cut on the rhythm: may hold 0.4 s).
 import { options, loadPlaywright, serve, openFormat, pickFormats, SIZES } from './page.mjs';
 import { synthesize, DEFAULT_VOICE } from './voice.mjs';
+import { leftovers } from './leftover.mjs';
+import { readFileSync, existsSync } from 'node:fs';
+import { resolve, dirname, basename } from 'node:path';
+import { fileURLToPath } from 'node:url';
 
 const args = process.argv.slice(2);
 const opt = options(args);
 const file = args.find((a) => a.endsWith('.html'));
 if (!file) { console.error('usage: node check.mjs <video.html> [--format story,feed] [--json] [--step 0.1]'); process.exit(1); }
 const STEP = +opt('step', 0.1);
+const ENGINE = dirname(fileURLToPath(import.meta.url));
 const asJson = !!opt('json');
 
 // Where the platform's own buttons and captions sit. Story: Meta's Reels guidance (top 14 %, bottom 35 %, the
@@ -75,6 +81,22 @@ function install() {
     return m && (m.length < 4 ? true : +m[3] > 0.5) && !(m.length === 4 && +m[3] === 0);
   };
 
+  const OBJECTS = '.phone,.browser,.card,.chip,.glass,canvas,img,video,picture,svg';
+  // a title whose last line holds a single word (the rest of the block has at least two)
+  const orphan = (blk) => {
+    if (blk.querySelector('.ticker')) return false;
+    const words = []; const rg = document.createRange();
+    const w = document.createTreeWalker(blk, NodeFilter.SHOW_TEXT);
+    for (let n = w.nextNode(); n; n = w.nextNode()) for (const m of n.nodeValue.matchAll(/[^ \t\n\r]+/g)) {
+      rg.setStart(n, m.index); rg.setEnd(n, m.index + m[0].length);
+      const r = rg.getBoundingClientRect(); if (r.width > 1) words.push(r);
+    }
+    if (words.length < 3) return false;
+    const lines = [[words[0]]];
+    for (const r of words.slice(1)) { const last = lines.at(-1).at(-1); if (r.top > last.top + last.height * 0.5) lines.push([r]); else lines.at(-1).push(r); }
+    return lines.length >= 2 && lines.at(-1).length === 1;
+  };
+
   window.__mvMeasure = () => {
     const W = innerWidth, H = innerHeight, view = { l: 0, t: 0, r: W, b: H };
     const op = new Map();
@@ -118,7 +140,7 @@ function install() {
         const cls = [...blk.classList].filter((c) => c !== 'words')[0];
         blocks.set(id, { id, sel: blk.id ? `#${blk.id}` : `${blk.tagName.toLowerCase()}${cls ? '.' + cls : ''}`,
           note: tk.has('note') || !!blk.closest('.disclaimer'), overlapOk: tk.has('overlap'), beat: tk.has('beat'), text: '', words: 0, seen: 0, read: 0,
-          maxOp: 0, rects: [], cut: false, off: false, size: 1e9, colors: {}, covered: 0, probes: 0 });
+          maxOp: 0, rects: [], cut: false, off: false, size: 1e9, colors: {}, covered: 0, objHits: 0, obj: null, probes: 0, el: blk });
       }
       const b = blocks.get(id);
       // a ticker shows one of its words at a time: count only the one mostly in view
@@ -134,13 +156,18 @@ function install() {
         b.colors[col] = (b.colors[col] || 0) + txt.length;
         b.op = Math.max(b.op || 0, o);
       }
-      // covered: probe the centre of each visible line; is something opaque painted above the text?
-      if (o > 0.6) for (const r of visRects.slice(0, 6)) {
-        const x = (r.l + r.r) / 2, y = (r.t + r.b) / 2;
+      // covered: probe five points along each visible line; is something opaque, or an object (a device, a card,
+      // a picture), drawn above the text? One end of a word under a phone counts.
+      if (o > 0.6) for (const r of visRects.slice(0, 6)) for (const fx of [0.1, 0.3, 0.5, 0.7, 0.9]) {
+        const x = r.l + (r.r - r.l) * fx, y = (r.t + r.b) / 2;
         const stack = document.elementsFromPoint(x, y);
         const i = stack.findIndex((e) => e === el || e.contains(el) || el.contains(e));
         b.probes++;
-        if (i > 0 && stack.slice(0, i).some((e) => !el.contains(e) && !e.closest('[data-check~="ignore"]') && paints(e) && opacity(e) > 0.5)) b.covered++;
+        if (i <= 0) continue;
+        const above = stack.slice(0, i).filter((e) => !el.contains(e) && !e.closest('[data-check~="ignore"]') && opacity(e) > 0.5);
+        const obj = above.map((e) => e.closest(OBJECTS)).find((e) => e && !e.contains(el));
+        if (obj) { b.objHits++; b.obj ||= obj.className && typeof obj.className === 'string' ? `${obj.tagName.toLowerCase()}.${obj.className.split(' ')[0]}` : obj.tagName.toLowerCase(); }
+        else if (above.some(paints)) b.covered++;
       }
     }
     const els = [...blocks.keys()].map((id) => [id, document.querySelector(`[data-mv-id="${id}"]`)]);
@@ -149,7 +176,9 @@ function install() {
       const color = Object.entries(b.colors).sort((a, c) => c[1] - a[1])[0]?.[0];
       return { id: b.id, sel: b.sel, note: b.note, overlapOk: b.overlapOk, beat: b.beat, text: b.text.replace(/\s+/g, ' ').slice(0, 60),
         words: b.words, readable: b.seen ? b.read / b.seen >= 0.8 : false, op: b.op || 0, rects: b.rects,
-        cut: b.cut, off: b.off, inside: b.inside, size: b.size === 1e9 ? 0 : Math.round(b.size), color, coveredShare: b.probes ? b.covered / b.probes : 0 };
+        cut: b.cut, off: b.off, inside: b.inside, size: b.size === 1e9 ? 0 : Math.round(b.size), color, coveredShare: b.probes ? b.covered / b.probes : 0,
+        objShare: b.probes ? b.objHits / b.probes : 0, obj: b.obj,
+        orphan: b.read === b.seen && b.op > 0.9 && b.size >= 56 && !b.beat && orphan(b.el) };
     });
   };
 
@@ -178,7 +207,18 @@ function install() {
     const taps = document.querySelectorAll('[data-tap]').length;
     const end = document.querySelector('.endcard');
     const endAt = end?.dataset.in ? +end.dataset.in.split('@')[1].split('/')[0] : null;
-    return { duration: D, hasDuration: !!document.body.dataset.duration, late, endAt, loops, sameEntrance, taps };
+    // what enters when (long-beat): entrances, word lines, typing, counters, ticker words, cuts, camera moves, 3D
+    const events = [...(window.__mvEvents || [])];
+    const at = (s) => +s.split('@')[1]?.split('/')[0].split(':')[0];
+    for (const el of document.querySelectorAll('[data-in]')) if (!el.classList.contains('w')) events.push(at(el.dataset.in));
+    for (const el of document.querySelectorAll('[data-words]')) events.push(+el.dataset.words.split(',')[0]);
+    for (const el of document.querySelectorAll('[data-show]')) events.push(+el.dataset.show.split(',')[0]);
+    for (const el of document.querySelectorAll('[data-type],[data-count]')) events.push(el.dataset.type ? +el.dataset.type.split(',')[0] : +el.dataset.count.split(',')[2]);
+    for (const el of document.querySelectorAll('[data-ticker]')) { const [a, st] = el.dataset.ticker.split(',').map(Number); const n = el.querySelector('.tk')?.children.length || 1; for (let k = 1; k < n; k++) events.push(a + k * (st || 1.4)); }
+    for (const el of document.querySelectorAll('[data-cam]')) el.dataset.cam.split(';').filter((x) => x.trim()).forEach((seg) => events.push(+seg.trim().split('/')[0]));
+    for (const el of document.querySelectorAll('[data-become]')) events.push(+el.dataset.become.split('/')[0]);
+    return { duration: D, hasDuration: !!document.body.dataset.duration, late, endAt, loops, sameEntrance, taps,
+      events: [...new Set(events.filter((x) => Number.isFinite(x)).map((x) => +x.toFixed(2)))].sort((a, b) => a - b) };
   };
 }
 
@@ -227,13 +267,56 @@ for (const format of formats) {
       });
     } catch (e) { add('error', 'voice', null, null, null, e.message, 'See references/engine.md, Voice-over.'); }
   }
+  // a video started by init.mjs: engine/template.json holds the phrases of its template
+  const tj = resolve(ENGINE, 'template.json');
+  const origin = existsSync(tj) ? JSON.parse(readFileSync(tj, 'utf8'))[basename(file, '.html')] : null;
+  if (origin) {
+    const { kept, placeholders } = leftovers(readFileSync(file, 'utf8'), origin.phrases);
+    if (kept.length) add('error', 'template-leftover', null, null, null, `${kept.length} phrase${kept.length > 1 ? 's' : ''} of the ${origin.template} template ${kept.length > 1 ? 'are' : 'is'} still in the video: ${kept.slice(0, 6).map((k) => `“${k}”`).join(', ')}${kept.length > 6 ? '…' : ''}.`, 'Write every line, screen and voice line from the client’s own message (the concept), not the template’s.');
+    if (placeholders.length) add('error', 'template-leftover', null, null, null, `Placeholders never filled in: ${placeholders.slice(0, 6).join(' ')}.`, 'Replace each with the client’s words, numbers or screens.');
+  }
   if (stat.endAt !== null && D - stat.endAt < 2.5) add('warning', 'end-card', { sel: '.endcard' }, stat.endAt, D, `The end card is on screen for ${(D - stat.endAt).toFixed(1)} s.`, 'Give the end card 2.5–3 s: start it earlier or raise data-duration.');
 
-  // sample the whole video
-  const timeline = [];  // [{ t, blocks }]
+  // sample the whole video; each sample also takes a small capture of the frame, compared with the one before
+  // (dead-time: the share of pixels that changed)
+  await decoder.evaluate(() => { window.__prev = null; window.__prevB64 = null; });
+  const timeline = [];  // [{ t, blocks, changed }]
   for (let t = 0; t < D - 1e-6; t += STEP) {
     const blocks = await page.evaluate((t) => { window.seek(t); return window.__mvMeasure(); }, +t.toFixed(3));
-    timeline.push({ t: +t.toFixed(3), blocks });
+    const data = (await page.screenshot({ type: 'jpeg', quality: 70 })).toString('base64');
+    const changed = await decoder.evaluate(async (b64) => {
+      if (b64 === window.__prevB64) return 0;          // the same frame, byte for byte
+      window.__prevB64 = b64;
+      const img = new Image(); img.src = `data:image/jpeg;base64,${b64}`; await img.decode();
+      const c = new OffscreenCanvas(img.width >> 1, img.height >> 1); const g = c.getContext('2d'); g.drawImage(img, 0, 0, c.width, c.height);
+      const d = g.getImageData(0, 0, c.width, c.height).data; const p = window.__prev; window.__prev = d;
+      if (!p || p.length !== d.length) return 1;
+      let n = 0; for (let i = 0; i < d.length; i += 4) if (Math.abs(d[i] - p[i]) > 6 || Math.abs(d[i + 1] - p[i + 1]) > 6 || Math.abs(d[i + 2] - p[i + 2]) > 6) n++;
+      return n / (d.length / 4);
+    }, data);
+    timeline.push({ t: +t.toFixed(3), blocks, changed });
+  }
+
+  // dead-time: nothing on screen changes for more than 0.8 s (the end card, or the last 2 s without one, may hold)
+  const holdFrom = stat.endAt ?? D - 2;
+  {
+    let a = null;
+    const flush = (z) => { if (a !== null && z - a > 0.8 + 1e-6) add('error', 'dead-time', null, a, z, `Nothing on screen changes for ${(z - a).toFixed(1)} s: the frame is frozen.`, `Keep the frame alive while the line holds: a slow push on the beat (data-drift="${a.toFixed(1)},${z.toFixed(1)}" on its scene or device), or the UI acting (a value counting, a row filling, a reply typing).`); a = null; };
+    for (let k = 1; k < timeline.length; k++) {
+      const { t, changed } = timeline[k];
+      if (t > holdFrom) { flush(Math.min(t, holdFrom)); break; }
+      if (changed < 0.0005) { if (a === null) a = timeline[k - 1].t; } else flush(timeline[k - 1].t);
+      if (k === timeline.length - 1) flush(Math.min(t, holdFrom));
+    }
+  }
+
+  // long-beat: more than 3.5 s with no new element entering
+  {
+    const ev = stat.events.filter((x) => x < holdFrom);
+    for (let k = 0; k < ev.length; k++) {
+      const z = k + 1 < ev.length ? ev[k + 1] : holdFrom;
+      if (z - ev[k] > 3.5) add('warning', 'long-beat', null, ev[k], z, `${(z - ev[k]).toFixed(1)} s with nothing new entering after ${fmtT(ev[k])}.`, 'Cut the beat shorter, or let a second thing happen in it: a value counts, a row fills, a reply types, a punch-in on what the line names.');
+    }
   }
 
   // turn per-sample flags into time ranges; keep ranges that last at least `min` seconds
@@ -281,6 +364,13 @@ for (const format of formats) {
     // covered by something opaque
     for (const [a, z] of runs(s.map(({ t, b }) => ({ t, on: !!b && b.readable && b.coveredShare >= 0.4 })), 0.3))
       add('error', 'covered', b, a, z, 'Something opaque is drawn on top of this text.', 'Raise the text’s z-index, move it, or time the other element so they are not on screen together.');
+    if (!b.overlapOk) for (const [a, z] of runs(s.map(({ t, b }) => ({ t, on: !!b && b.readable && b.objShare >= 0.15 })), 0.2)) {
+      const by = s.find(({ t, b }) => b && t >= a && b.obj)?.b.obj || 'an object';
+      add('error', 'object-over-text', b, a, z, `${by} is drawn over part of this text.`, 'Move or scale the device or picture so it clears the words, wrap the line (text-wrap: balance, a shorter line), or add data-check="overlap" only when the overlap is the design.');
+    }
+
+    // orphan: a title whose last line holds one word
+    if (s.some(({ b }) => b?.orphan)) add('warning', 'orphan', b, s.find(({ b }) => b?.orphan).t, null, 'The last line of this title holds a single word.', 'Balance the lines: shorten the title, change the font size or the box width, or break the line yourself (<br> or a non-breaking space between the last two words).');
 
     // read time
     if (!b.note) for (const [a, z] of readRuns[id]) {
