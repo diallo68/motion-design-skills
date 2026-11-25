@@ -14,7 +14,7 @@
 // Opt-outs on any element: data-check="ignore" (never checked), "ui" (app or site UI inside a device: not read),
 // "note" (small print such as the disclaimer: no read-time, safe-zone or contrast rule), "overlap" (meant to overlap),
 // "beat" (a one- or two-word line cut on the rhythm: may hold 0.4 s).
-import { options, loadPlaywright, serve, openFormat, pickFormats, SIZES } from './page.mjs';
+import { options, loadPlaywright, serve, openFormat, pickFormats, SIZES, usesWebGL } from './page.mjs';
 import { synthesize, DEFAULT_VOICE } from './voice.mjs';
 import { leftovers } from './leftover.mjs';
 import { readFileSync, existsSync } from 'node:fs';
@@ -241,7 +241,7 @@ const ratio = (a, b) => { const x = lum(a), y = lum(b); return (Math.max(x, y) +
 const parseColor = (s) => { const m = (s || '').match(/[\d.]+/g); return m ? { rgb: m.slice(0, 3).map(Number), a: m.length > 3 ? +m[3] : 1 } : null; };
 
 // ---------------------------------------------------------------- run
-const chromium = await loadPlaywright();
+const chromium = await loadPlaywright({ webgl: usesWebGL(file) });
 const site = await serve(file);
 const browser = await chromium.launch();
 const formats = await pickFormats(browser, site.url, opt('format'));

@@ -1,6 +1,7 @@
 // Shared by render.mjs and check.mjs: serve a video's folder over HTTP and open it at a format's size.
 import { createServer } from 'node:http';
 import { readFile } from 'node:fs/promises';
+import { readFileSync } from 'node:fs';
 import { extname, join, dirname, resolve, basename } from 'node:path';
 
 export const SIZES = { story: [1080, 1920], feed: [1080, 1350], square: [1080, 1080], landscape: [1920, 1080] };
@@ -16,14 +17,21 @@ export function options(argv) {
   };
 }
 
-export async function loadPlaywright() {
+// A page that draws WebGL (a 3D stage, three.js, a canvas asking for webgl): only then is Chrome's software GL needed.
+export function usesWebGL(file) {
+  try { return /scene3d|from\s*['"]three|three(\.module)?(\.min)?\.js|getContext\(\s*['"](experimental-)?webgl/i.test(readFileSync(file, 'utf8')); } catch { return true; }
+}
+
+// webgl: true launches Chrome with its software renderer (SwiftShader), so 3D works the same on every machine without
+// a GPU. A 2D page goes without it: SwiftShader makes every screenshot about 5 times slower.
+export async function loadPlaywright({ webgl = true } = {}) {
   let chromium;
   try { ({ chromium } = await import('playwright')); } catch {
     console.error('Playwright is missing: run `npm i playwright && npx playwright install chromium` in this folder.');
     process.exit(1);
   }
-  // WebGL (3D scenes) through the software renderer, so it works the same on every machine without a GPU
-  return { launch: (o = {}) => chromium.launch({ ...o, args: ['--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist', ...(o.args || [])] }) };
+  const gl = webgl ? ['--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist'] : [];
+  return { launch: (o = {}) => chromium.launch({ ...o, args: [...gl, ...(o.args || [])] }) };
 }
 
 // Starts a server for the video's folder (fonts and modules do not load reliably from file://).
