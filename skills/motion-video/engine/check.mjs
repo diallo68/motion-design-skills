@@ -9,7 +9,7 @@
 //
 // Exit code 1 when there is at least one error. Rules: safe-zone, off-frame, cut-off, overlap, covered,
 // object-over-text, read-time, last-line, end-card, small-text, contrast, crowded, never-shown, load,
-// template-leftover; motion: dead-time (nothing on screen changes for more than 0.8 s), long-beat, orphan,
+// template-leftover; motion: dead-time (the frame barely changes for 0.8 s, backgrounds aside), long-beat, orphan,
 // moving-text, same-entrance, tap-ring.
 // Opt-outs on any element: data-check="ignore" (never checked), "ui" (app or site UI inside a device: not read),
 // "note" (small print such as the disclaimer: no read-time, safe-zone or contrast rule), "overlap" (meant to overlap),
@@ -26,6 +26,9 @@ const opt = options(args);
 const file = args.find((a) => a.endsWith('.html'));
 if (!file) { console.error('usage: node check.mjs <video.html> [--format story,feed] [--json] [--step 0.1]'); process.exit(1); }
 const STEP = +opt('step', 0.1);
+// dead-time: a half-size capture every 0.2 s, compared like ffmpeg's freezedetect (mean absolute difference from the
+// last frame that changed, as a share of full scale; 0.001 is freezedetect's n). Decorative grounds are hidden first.
+const DEAD_STEP = 0.2, DEAD_MAD = 0.001, DEAD_MAX = 0.8;
 const ENGINE = dirname(fileURLToPath(import.meta.url));
 const asJson = !!opt('json');
 
@@ -42,7 +45,9 @@ function safeBox(format, w, h) {
 // a line split into words by data-words): what the viewer reads as one line or paragraph.
 function install() {
   const st = document.createElement('style');
-  st.textContent = '*{pointer-events:auto!important}';
+  // html.mv-still: what dead-time measures, without the grounds that move by themselves (a mesh, a glow, a loop on
+  // an empty element): a frame whose only motion is its background still reads as frozen
+  st.textContent = '*{pointer-events:auto!important} html.mv-still .bg-mesh,html.mv-still .bg-glow,html.mv-still [data-mv-decor]{visibility:hidden!important}';
   document.head.append(st);
   let next = 1;
   const tokens = (el) => {
@@ -82,12 +87,14 @@ function install() {
   };
 
   const OBJECTS = '.phone,.browser,.card,.chip,.glass,canvas,img,video,picture,svg';
+  for (const el of document.querySelectorAll('[data-loop]')) if (!el.textContent.trim() && !el.matches(OBJECTS) && !el.querySelector(OBJECTS)) el.dataset.mvDecor = '';
   // a title whose last line holds a single word (the rest of the block has at least two)
   const orphan = (blk) => {
     if (blk.querySelector('.ticker')) return false;
     const words = []; const rg = document.createRange();
     const w = document.createTreeWalker(blk, NodeFilter.SHOW_TEXT);
-    for (let n = w.nextNode(); n; n = w.nextNode()) for (const m of n.nodeValue.matchAll(/[^ \t\n\r]+/g)) {
+    for (let n = w.nextNode(); n; n = w.nextNode()) for (const m of n.nodeValue.matchAll(/[^\s]+/g)) {   // words, nbsp included; a lone « ? » or « » » is not a word
+      if (!/[\p{L}\p{N}]/u.test(m[0])) continue;
       rg.setStart(n, m.index); rg.setEnd(n, m.index + m[0].length);
       const r = rg.getBoundingClientRect(); if (r.width > 1) words.push(r);
     }
@@ -140,7 +147,7 @@ function install() {
         const cls = [...blk.classList].filter((c) => c !== 'words')[0];
         blocks.set(id, { id, sel: blk.id ? `#${blk.id}` : `${blk.tagName.toLowerCase()}${cls ? '.' + cls : ''}`,
           note: tk.has('note') || !!blk.closest('.disclaimer'), overlapOk: tk.has('overlap'), beat: tk.has('beat'), text: '', words: 0, seen: 0, read: 0,
-          maxOp: 0, rects: [], cut: false, off: false, size: 1e9, colors: {}, covered: 0, objHits: 0, obj: null, probes: 0, el: blk });
+          maxOp: 0, rects: [], cut: false, off: false, size: 1e9, colors: {}, covered: 0, objLine: 0, obj: null, probes: 0, el: blk });
       }
       const b = blocks.get(id);
       // a ticker shows one of its words at a time: count only the one mostly in view
@@ -156,18 +163,23 @@ function install() {
         b.colors[col] = (b.colors[col] || 0) + txt.length;
         b.op = Math.max(b.op || 0, o);
       }
-      // covered: probe five points along each visible line; is something opaque, or an object (a device, a card,
-      // a picture), drawn above the text? One end of a word under a phone counts.
-      if (o > 0.6) for (const r of visRects.slice(0, 6)) for (const fx of [0.1, 0.3, 0.5, 0.7, 0.9]) {
-        const x = r.l + (r.r - r.l) * fx, y = (r.t + r.b) / 2;
-        const stack = document.elementsFromPoint(x, y);
-        const i = stack.findIndex((e) => e === el || e.contains(el) || el.contains(e));
-        b.probes++;
-        if (i <= 0) continue;
-        const above = stack.slice(0, i).filter((e) => !el.contains(e) && !e.closest('[data-check~="ignore"]') && opacity(e) > 0.5);
-        const obj = above.map((e) => e.closest(OBJECTS)).find((e) => e && !e.contains(el));
-        if (obj) { b.objHits++; b.obj ||= obj.className && typeof obj.className === 'string' ? `${obj.tagName.toLowerCase()}.${obj.className.split(' ')[0]}` : obj.tagName.toLowerCase(); }
-        else if (above.some(paints)) b.covered++;
+      // covered: probe each visible line at five points across and three heights (25, 50 and 85 % of the line: a
+      // device over the bottom of the letters counts); is something opaque, or an object (a device, a card, a
+      // picture), drawn above the text? objShare is the share of the worst line's probes under an object.
+      if (o > 0.6) for (const r of visRects.slice(0, 6)) {
+        let hits = 0, n = 0;
+        for (const fy of [0.25, 0.5, 0.85]) for (const fx of [0.1, 0.3, 0.5, 0.7, 0.9]) {
+          const x = r.l + (r.r - r.l) * fx, y = r.t + (r.b - r.t) * fy;
+          const stack = document.elementsFromPoint(x, y);
+          const i = stack.findIndex((e) => e === el || e.contains(el) || el.contains(e));
+          b.probes++; n++;
+          if (i <= 0) continue;
+          const above = stack.slice(0, i).filter((e) => !el.contains(e) && !e.closest('[data-check~="ignore"]') && opacity(e) > 0.5);
+          const obj = above.map((e) => e.closest(OBJECTS)).find((e) => e && !e.contains(el));
+          if (obj) { hits++; b.obj ||= obj.className && typeof obj.className === 'string' ? `${obj.tagName.toLowerCase()}.${obj.className.split(' ')[0]}` : obj.tagName.toLowerCase(); }
+          else if (above.some(paints)) b.covered++;
+        }
+        b.objLine = Math.max(b.objLine || 0, hits / n);
       }
     }
     const els = [...blocks.keys()].map((id) => [id, document.querySelector(`[data-mv-id="${id}"]`)]);
@@ -177,8 +189,9 @@ function install() {
       return { id: b.id, sel: b.sel, note: b.note, overlapOk: b.overlapOk, beat: b.beat, text: b.text.replace(/\s+/g, ' ').slice(0, 60),
         words: b.words, readable: b.seen ? b.read / b.seen >= 0.8 : false, op: b.op || 0, rects: b.rects,
         cut: b.cut, off: b.off, inside: b.inside, size: b.size === 1e9 ? 0 : Math.round(b.size), color, coveredShare: b.probes ? b.covered / b.probes : 0,
-        objShare: b.probes ? b.objHits / b.probes : 0, obj: b.obj,
-        orphan: b.read === b.seen && b.op > 0.9 && b.size >= 56 && !b.beat && orphan(b.el) };
+        objShare: b.objLine || 0, obj: b.obj,
+        // a title still made of [placeholders] breaks where the client's words will not: not judged yet
+        orphan: b.read === b.seen && b.op > 0.9 && b.size >= 56 && !b.beat && !/\[[^\]]+\]/.test(b.text) && orphan(b.el) };
     });
   };
 
@@ -237,6 +250,25 @@ const report = [];
 
 const fmtT = (t) => `${t.toFixed(1)}s`;
 const quote = (s) => `“${s.length > 40 ? s.slice(0, 39) + '…' : s}”`;
+// a capture that times out under load is tried once more, then the check stops with a clear message
+async function retry(fn, what) {
+  try { return await fn(); } catch (e) {
+    try { return await fn(); } catch (e2) { console.error(`check: the ${what} failed twice (${e2.message.split('\n')[0]}). The machine may be overloaded: close other renders or checks and run it again.`); process.exit(2); }
+  }
+}
+
+// a video started by init.mjs: engine/template.json holds the phrases of its template. The source is the same in
+// every format, so this is checked once, for the page.
+{
+  const tj = resolve(ENGINE, 'template.json');
+  const origin = existsSync(tj) ? JSON.parse(readFileSync(tj, 'utf8'))[basename(file, '.html')] : null;
+  if (origin) {
+    const add = (rule, message, fix) => report.push({ format: 'page', severity: 'error', rule, from: null, to: null, message, fix });
+    const { kept, placeholders } = leftovers(readFileSync(file, 'utf8'), origin.phrases);
+    if (kept.length) add('template-leftover', `${kept.length} phrase${kept.length > 1 ? 's' : ''} of the ${origin.template} template ${kept.length > 1 ? 'are' : 'is'} still in the video: ${kept.slice(0, 6).map((k) => `“${k}”`).join(', ')}${kept.length > 6 ? '…' : ''}.`, 'Write every line, screen and voice line from the client’s own message (the concept), not the template’s.');
+    if (placeholders.length) add('template-leftover', `Placeholders never filled in: ${placeholders.slice(0, 6).join(' ')}.`, 'Replace each with the client’s words, numbers or screens. A template just made by init.mjs fails here until it is filled in.');
+  }
+}
 
 for (const format of formats) {
   const [W, H] = SIZES[format];
@@ -267,47 +299,50 @@ for (const format of formats) {
       });
     } catch (e) { add('error', 'voice', null, null, null, e.message, 'See references/engine.md, Voice-over.'); }
   }
-  // a video started by init.mjs: engine/template.json holds the phrases of its template
-  const tj = resolve(ENGINE, 'template.json');
-  const origin = existsSync(tj) ? JSON.parse(readFileSync(tj, 'utf8'))[basename(file, '.html')] : null;
-  if (origin) {
-    const { kept, placeholders } = leftovers(readFileSync(file, 'utf8'), origin.phrases);
-    if (kept.length) add('error', 'template-leftover', null, null, null, `${kept.length} phrase${kept.length > 1 ? 's' : ''} of the ${origin.template} template ${kept.length > 1 ? 'are' : 'is'} still in the video: ${kept.slice(0, 6).map((k) => `“${k}”`).join(', ')}${kept.length > 6 ? '…' : ''}.`, 'Write every line, screen and voice line from the client’s own message (the concept), not the template’s.');
-    if (placeholders.length) add('error', 'template-leftover', null, null, null, `Placeholders never filled in: ${placeholders.slice(0, 6).join(' ')}.`, 'Replace each with the client’s words, numbers or screens.');
-  }
   if (stat.endAt !== null && D - stat.endAt < 2.5) add('warning', 'end-card', { sel: '.endcard' }, stat.endAt, D, `The end card is on screen for ${(D - stat.endAt).toFixed(1)} s.`, 'Give the end card 2.5–3 s: start it earlier or raise data-duration.');
 
-  // sample the whole video; each sample also takes a small capture of the frame, compared with the one before
-  // (dead-time: the share of pixels that changed)
-  await decoder.evaluate(() => { window.__prev = null; window.__prevB64 = null; });
-  const timeline = [];  // [{ t, blocks, changed }]
+  // sample the whole video: the text every STEP
+  const timeline = [];  // [{ t, blocks }]
   for (let t = 0; t < D - 1e-6; t += STEP) {
-    const blocks = await page.evaluate((t) => { window.seek(t); return window.__mvMeasure(); }, +t.toFixed(3));
-    const data = (await page.screenshot({ type: 'jpeg', quality: 70 })).toString('base64');
-    const changed = await decoder.evaluate(async (b64) => {
-      if (b64 === window.__prevB64) return 0;          // the same frame, byte for byte
-      window.__prevB64 = b64;
-      const img = new Image(); img.src = `data:image/jpeg;base64,${b64}`; await img.decode();
-      const c = new OffscreenCanvas(img.width >> 1, img.height >> 1); const g = c.getContext('2d'); g.drawImage(img, 0, 0, c.width, c.height);
-      const d = g.getImageData(0, 0, c.width, c.height).data; const p = window.__prev; window.__prev = d;
-      if (!p || p.length !== d.length) return 1;
-      let n = 0; for (let i = 0; i < d.length; i += 4) if (Math.abs(d[i] - p[i]) > 6 || Math.abs(d[i + 1] - p[i + 1]) > 6 || Math.abs(d[i + 2] - p[i + 2]) > 6) n++;
-      return n / (d.length / 4);
-    }, data);
-    timeline.push({ t: +t.toFixed(3), blocks, changed });
+    const tt = +t.toFixed(3);
+    timeline.push({ t: tt, blocks: await page.evaluate((t) => { window.seek(t); return window.__mvMeasure(); }, tt) });
   }
 
-  // dead-time: nothing on screen changes for more than 0.8 s (the end card, or the last 2 s without one, may hold)
+  // then the frame every DEAD_STEP, decorative grounds hidden for the whole pass (toggling them per frame re-paints
+  // them every time), each capture halved and compared with the last frame that changed
+  const cdp = await page.context().newCDPSession(page);
+  await decoder.evaluate(() => { window.__ref = null; });
+  await page.evaluate(() => document.documentElement.classList.add('mv-still'));
+  const stills = [];    // [{ t, mad }]: difference from the last frame that changed (0–1)
+  for (let t = 0; t < D - 1e-6; t += DEAD_STEP) {
+    const tt = +t.toFixed(3);
+    await page.evaluate((t) => window.seek(t), tt);
+    const { data } = await retry(() => cdp.send('Page.captureScreenshot', { format: 'jpeg', quality: 80, optimizeForSpeed: true }), 'capture');
+    const mad = await decoder.evaluate(async ([b64, thr]) => {
+      const img = new Image(); img.src = `data:image/jpeg;base64,${b64}`; await img.decode();
+      const c = new OffscreenCanvas(img.width >> 1, img.height >> 1); const g = c.getContext('2d'); g.drawImage(img, 0, 0, c.width, c.height);
+      const d = g.getImageData(0, 0, c.width, c.height).data; const ref = window.__ref;
+      if (!ref || ref.length !== d.length) { window.__ref = d; return 1; }
+      let sum = 0; for (let i = 0; i < d.length; i += 4) sum += Math.abs(d[i] - ref[i]) + Math.abs(d[i + 1] - ref[i + 1]) + Math.abs(d[i + 2] - ref[i + 2]);
+      const m = sum / ((d.length / 4) * 3 * 255);
+      if (m >= thr) window.__ref = d;                    // it changed: the next frames are compared with this one
+      return m;
+    }, [data, DEAD_MAD]);
+    stills.push({ t: tt, mad });
+  }
+  await page.evaluate(() => document.documentElement.classList.remove('mv-still'));
+  await cdp.detach();
+
+  // dead-time: the frame does not visibly change for 0.8 s or more (the end card, or the last 2 s without one, may hold)
   const holdFrom = stat.endAt ?? D - 2;
   {
-    let a = null;
-    const flush = (z) => { if (a !== null && z - a > 0.8 + 1e-6) add('error', 'dead-time', null, a, z, `Nothing on screen changes for ${(z - a).toFixed(1)} s: the frame is frozen.`, `Keep the frame alive while the line holds: a slow push on the beat (data-drift="${a.toFixed(1)},${z.toFixed(1)}" on its scene or device), or the UI acting (a value counting, a row filling, a reply typing).`); a = null; };
-    for (let k = 1; k < timeline.length; k++) {
-      const { t, changed } = timeline[k];
-      if (t > holdFrom) { flush(Math.min(t, holdFrom)); break; }
-      if (changed < 0.0005) { if (a === null) a = timeline[k - 1].t; } else flush(timeline[k - 1].t);
-      if (k === timeline.length - 1) flush(Math.min(t, holdFrom));
+    const flush = (a, z) => { if (z - a >= DEAD_MAX - 1e-6) add('error', 'dead-time', null, a, z, `The frame barely changes for ${(z - a).toFixed(1)} s (backgrounds aside): it reads as frozen.`, `Keep the frame alive while the line holds: a slow push on the beat (data-drift="${a.toFixed(1)},${(z + 0.4).toFixed(1)}" on its scene or device), or the UI acting (a value counting, a row filling, a reply typing). A moving background alone does not count.`); };
+    let a = stills[0]?.t ?? 0, z = a;
+    for (const { t, mad } of stills.slice(1)) {
+      if (t > holdFrom) break;
+      if (mad < DEAD_MAD) z = t; else { flush(a, z); a = z = t; }
     }
+    flush(a, Math.min(z, holdFrom));
   }
 
   // long-beat: more than 3.5 s with no new element entering
@@ -432,7 +467,7 @@ for (const format of formats) {
     const clip = { x: Math.max(0, Math.floor(u.l)), y: Math.max(0, Math.floor(u.t)) }; clip.width = Math.min(W, Math.ceil(u.r)) - clip.x; clip.height = Math.min(H, Math.ceil(u.b)) - clip.y;
     if (clip.width < 4 || clip.height < 4) continue;
     await page.evaluate(({ t, id }) => { window.seek(t); window.__mvHide(true); }, { t });
-    const png = await page.screenshot({ clip, type: 'png', timeout: 120000 });
+    const png = await retry(() => page.screenshot({ clip, type: 'png', timeout: 120000 }), 'contrast capture');
     await page.evaluate(() => window.__mvHide(false));
     const px = await decoder.evaluate(async (b64) => {
       const img = new Image(); img.src = `data:image/png;base64,${b64}`; await img.decode();
@@ -457,16 +492,17 @@ site.close();
 
 // ---------------------------------------------------------------- report
 const order = { error: 0, warning: 1 };
-report.sort((a, b) => a.format.localeCompare(b.format) || order[a.severity] - order[b.severity] || (a.from ?? -1) - (b.from ?? -1));
+report.sort((a, b) => (a.format === 'page' ? -1 : b.format === 'page' ? 1 : a.format.localeCompare(b.format)) || order[a.severity] - order[b.severity] || (a.from ?? -1) - (b.from ?? -1));
 const errors = report.filter((r) => r.severity === 'error').length;
 const warnings = report.length - errors;
 if (asJson) {
   console.log(JSON.stringify({ ok: errors === 0, errors, warnings, formats, findings: report }, null, 2));
 } else {
-  for (const format of formats) {
+  const pageList = report.filter((r) => r.format === 'page');
+  for (const format of [...(pageList.length ? ['page'] : []), ...formats]) {
     const list = report.filter((r) => r.format === format);
-    const [w, h] = SIZES[format];
-    console.log(`\n${format} ${w}×${h}  ${list.length ? '' : '✓ nothing to fix'}`);
+    const [w, h] = SIZES[format] || [];
+    console.log(format === 'page' ? '\npage (every format)' : `\n${format} ${w}×${h}  ${list.length ? '' : '✓ nothing to fix'}`);
     for (const r of list) {
       const when = r.from == null ? '' : r.to == null ? ` at ${fmtT(r.from)}` : ` ${fmtT(r.from)}–${fmtT(r.to)}`;
       const what = r.element ? ` ${r.element}${r.text ? ' ' + quote(r.text) : ''}` : '';

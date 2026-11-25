@@ -23,12 +23,12 @@
 | `voice-overlap` / `voice-late` | start the next line later, cut words, or `data-voice-rate="1.1"` |
 | `Playwright is missing` | run `npm install && npx playwright install chromium` in the project folder |
 | `ffmpeg is not on the PATH` | install ffmpeg (macOS `brew install ffmpeg`, Ubuntu `sudo apt install ffmpeg`, Windows `winget install ffmpeg`) |
-| Fallback font in the frames | the Google Fonts `@import` needs network at render time; or ship `.woff2` files with `@font-face` |
+| Fallback font in the frames, or `check` and the render differ | the Google Fonts `@import` needs network at check and render time, and a fallback font changes every line's width. Install the fonts in the project: `npm i @fontsource/inter-tight` (the family the style's `@import` names: Inter Tight for midnight-glow, Archivo, Nunito, Plus Jakarta Sans, Space Grotesk, Fraunces and DM Sans for the others), then in `style.css` replace the `@import` with one `@import url('node_modules/@fontsource/inter-tight/800.css');` per weight used; or put `.woff2` files in `assets/fonts/` with an `@font-face { font-family: …; src: url('assets/fonts/x.woff2') format('woff2'); font-weight: …; }` each. `check` then needs no network |
 | An element jumps or loses its position | its entrance animation owns `transform`; position a wrapper and animate the child |
 | Something shows before its time | a `data-in` keyframe whose first step is visible; start entrances from `opacity: 0` |
 | Element reappears after `data-out` | it also has `data-show`, which restarts animations; use one or the other |
 | Words split oddly | `data-words` splits text nodes on spaces; use `&nbsp;` to keep two words together |
 | Ticker cuts a word | each `<span>` inside the ticker must be one line; shorten the word or lower the font size |
 | Blank frames at the start | images not local or too large; keep assets in the project and under ~3 MB each |
-| Render is slow | it is about 0.1–0.3 s per frame (×2 with `--scale 2`, ×N with `--motion-blur N`); render one format with `--format`, check with `--sheet` first, keep the quality options for the final render |
+| Render is slow | it is about 0.2–0.6 s per frame (×4–5 with `--scale 2`, ×N with `--motion-blur N`, and they multiply); render one format with `--format`, check with `--sheet` first, keep the quality options for the final render |
 | Video not accepted by a platform | outputs are H.264, yuv420p, 30 fps, faststart: accepted everywhere; add `--fps 60` only if asked |

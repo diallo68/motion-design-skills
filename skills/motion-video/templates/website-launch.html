@@ -38,7 +38,7 @@
   @keyframes scrollPage { 0%, 12% { transform: translateY(0) } 50%, 62% { transform: translateY(-38%) } 90%, 100% { transform: translateY(0) } }   /* back on top before the click */
 
   .ph-wrap { position: absolute; left: 50%; top: 520px; width: 420px; height: 870px; margin-left: -210px; }
-  body.landscape .ph-wrap { top: 120px; } body.feed .ph-wrap { top: 260px; transform: scale(.85); transform-origin: 50% 0; } body.square .ph-wrap { top: 160px; transform: scale(.85); transform-origin: 50% 0; }
+  body.landscape .ph-wrap { top: 180px; }   /* under the title line, not over it */ body.feed .ph-wrap { top: 260px; transform: scale(.85); transform-origin: 50% 0; } body.square .ph-wrap { top: 160px; transform: scale(.85); transform-origin: 50% 0; }
   .ph-wrap .phone { left: 0; top: 0; }
   .ph-wrap { transform-origin: 50% 0; }   /* the slow push grows the phone downward, away from the title */
   .site.mobile h1 { font-size: 52px; } .site.mobile .hero { padding: 120px 28px 20px; } .site.mobile .img { margin: 20px 28px; height: 260px; } .site.mobile nav { padding: 70px 28px 0; position: absolute; }
@@ -49,7 +49,7 @@
   <div class="bg-glow" style="width:900px;height:900px;left:-300px;top:-300px" data-loop="drift/10"></div>
 
   <!-- 1. Statement -->
-  <div class="top center" data-out="outUp@2.7/.4" data-drift=".6,2.9">
+  <div class="top center" data-out="outUp@2.45/.35" data-drift=".6,2.8">
     <div class="h1" data-words=".2,.1">[The news] <span class="grad">[in two words]</span></div>
   </div>
 
@@ -61,7 +61,7 @@
 
   <!-- 3. Browser -->
   <div class="br-wrap" data-show="0,10" data-drift="3.4,10,1.03">
-    <div class="browser" data-in="fadeUp@2.8/.9">
+    <div class="browser" data-in="fadeUp@2.85/.9">
       <div class="bar"><span class="lights"><i></i><i></i><i></i></span><span class="url"><span data-type="3.5,12">[Address]</span></span></div>
       <div class="progress" data-in="grow@4.6/.5" style="opacity:1"></div>
       <div class="view">

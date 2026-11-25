@@ -15,7 +15,9 @@ Keep the preset's structure and override the variables at the top of the video (
 :root { --accent: #0a7b4b; --accent-ink: #fff; --accent2: #f5b700; --font: "Outfit", sans-serif; }
 ```
 Use the brand's own font when it is on Google Fonts (add the `@import` to `style.css`) or as a local `.woff2` with
-`@font-face`. Check contrast on the end card: `--end-btn` and `--end-btn-ink` must read on `--end-bg`.
+`@font-face`. Check contrast on the end card: `--end-btn` and `--end-btn-ink` must read on `--end-bg`. A dark accent
+(deep green, navy) disappears on the templates' dark grounds (map-story's night map, grid-montage's band): give a
+lighter tint of it as `--accent-on-dark`, as `warm-editorial` does.
 
 ## Mixing
 One preset per video series, so the posts look like one campaign. Vary the template and the moves between videos,

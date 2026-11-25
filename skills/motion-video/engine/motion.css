@@ -43,14 +43,16 @@ img { display: block; max-width: 100%; }
 .top { position: absolute; left: var(--pad); right: var(--pad); top: 290px; }        /* story: below the platform's top bar (14 %) */
 .mid { position: absolute; left: var(--pad); right: var(--pad); top: 50%; transform: translateY(-50%); }
 .bottom { position: absolute; left: var(--pad); right: var(--pad); bottom: 690px; }  /* story: above the caption and buttons (35 %) */
+body.story :is(.top, .mid, .bottom) { right: 120px; }                                 /* story: clear of the like and comment column */
 body.feed .top { top: 120px; } body.feed .bottom { bottom: 110px; } body.landscape .top { top: 80px; } body.landscape .bottom { bottom: 80px; }
 body.square .top { top: 90px; } body.square .bottom { bottom: 80px; }
 
 /* ---------- backgrounds ---------- */
-.bg-glow { position: absolute; border-radius: 50%; filter: blur(120px); opacity: .55; background: var(--accent); }
+/* grounds drawn soft, without filter: blur (a blur re-renders every frame and costs ~25× at render.mjs --scale 2) */
+.bg-glow { position: absolute; border-radius: 50%; opacity: .55; background: radial-gradient(closest-side, var(--accent) 0, color-mix(in srgb, var(--accent) 55%, transparent) 45%, color-mix(in srgb, var(--accent) 15%, transparent) 75%, transparent 100%); }
 .bg-grid { position: absolute; inset: 0; background-image: linear-gradient(var(--line) 1px, transparent 1px), linear-gradient(90deg, var(--line) 1px, transparent 1px); background-size: 90px 90px; mask-image: radial-gradient(ellipse at center, #000 30%, transparent 75%); }
 .bg-dots { position: absolute; inset: 0; background-image: radial-gradient(var(--line) 2px, transparent 2px); background-size: 48px 48px; }
-.bg-mesh { position: absolute; inset: -20%; background: radial-gradient(40% 35% at 20% 20%, var(--accent) 0, transparent 70%), radial-gradient(40% 35% at 80% 30%, var(--accent2) 0, transparent 70%), radial-gradient(50% 40% at 50% 90%, var(--bg2) 0, transparent 70%); filter: blur(60px); opacity: .45; }
+.bg-mesh { position: absolute; inset: -20%; background: radial-gradient(46% 41% at 20% 20%, var(--accent) 0, color-mix(in srgb, var(--accent) 50%, transparent) 35%, color-mix(in srgb, var(--accent) 12%, transparent) 62%, transparent 82%), radial-gradient(46% 41% at 80% 30%, var(--accent2) 0, color-mix(in srgb, var(--accent2) 50%, transparent) 35%, color-mix(in srgb, var(--accent2) 12%, transparent) 62%, transparent 82%), radial-gradient(56% 46% at 50% 90%, var(--bg2) 0, color-mix(in srgb, var(--bg2) 50%, transparent) 35%, transparent 82%); opacity: .45; }
 .grain::after { content: ""; position: absolute; inset: 0; pointer-events: none; opacity: .06; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence baseFrequency='.9'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E"); }
 
 /* ---------- phone ---------- */
