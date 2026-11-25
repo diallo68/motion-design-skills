@@ -205,7 +205,9 @@ second time and softens the text.
   film where everything clicks sounds cheap.
 - **Voice-over** (optional): a synthetic voice that sounds robotic does more harm than none. In French, start
   with Chatterbox or the person's own recorded voice; Kokoro and Piper are offline fallbacks, flatter. Listen to
-  the voice on the rendered MP4 before delivering, and say plainly if it still sounds synthetic. Write the lines in
+  the voice on the rendered MP4 before delivering, and say plainly if it still sounds synthetic. Chatterbox's free
+  quota makes only a few lines a day, even with `HF_TOKEN`: for a series, make each video's lines as soon as they are
+  written (they are cached), and tell the person early if the rest must wait a day or needs Hugging Face PRO. Write the lines in
   the storyboard, then put them on the page, `data-vo="…"` on the
   element they go with (said when it enters) or `window.VOICE = [{ at, text }]`. Voices: Kokoro, natural, free and
   offline (`voice-setup.mjs --kokoro` once; `kokoro:ff_siwis` in French, `kokoro:af_heart` in English); Chatterbox, the most natural

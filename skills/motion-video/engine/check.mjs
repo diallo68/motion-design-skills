@@ -87,7 +87,8 @@ function install() {
     if (blk.querySelector('.ticker')) return false;
     const words = []; const rg = document.createRange();
     const w = document.createTreeWalker(blk, NodeFilter.SHOW_TEXT);
-    for (let n = w.nextNode(); n; n = w.nextNode()) for (const m of n.nodeValue.matchAll(/[^ \t\n\r]+/g)) {
+    for (let n = w.nextNode(); n; n = w.nextNode()) for (const m of n.nodeValue.matchAll(/[^\s]+/g)) {   // words, nbsp included; a lone « ? » or « » » is not a word
+      if (!/[\p{L}\p{N}]/u.test(m[0])) continue;
       rg.setStart(n, m.index); rg.setEnd(n, m.index + m[0].length);
       const r = rg.getBoundingClientRect(); if (r.width > 1) words.push(r);
     }
