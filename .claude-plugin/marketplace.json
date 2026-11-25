@@ -8,7 +8,7 @@
       "description": "Make app promo, website launch and social ad videos with the motion patterns seen on Dribbble and Pinterest: kinetic type, 3D phones, UI cards, chips, cursor taps, tickers, counters and end cards, rendered frame by frame to MP4 in story, feed, square and landscape formats.",
       "version": "1.0.0",
       "source": "./",
-      "skills": ["./skills/motion-video"],
+      "skills": ["./skills/bowe-motion-video"],
       "author": { "name": "diallo68" },
       "homepage": "https://github.com/diallo68/motion-design-skills",
       "repository": "https://github.com/diallo68/motion-design-skills",
