@@ -9,7 +9,8 @@ const strip = (s) => decode(s.replace(/\$\{[^}]*\}/g, ' ').replace(/<[^>]+>/g, '
 
 // Every piece of text a page can show or say: text between tags, data-vo lines, string literals in its scripts.
 export function textSegments(html) {
-  const src = html.replace(/<!--[\s\S]*?-->/g, ' ').replace(/<style[\s\S]*?<\/style>/gi, ' ').replace(/<head\b[\s\S]*?<\/head>/i, ' ');
+  const src = html.replace(/<!--[\s\S]*?-->/g, ' ').replace(/<style[\s\S]*?<\/style>/gi, ' ').replace(/<head\b[\s\S]*?<\/head>/i, ' ')
+    .replace(/<svg\b[\s\S]*?<\/svg>/gi, ' ');        // drawings: their numbers and paths are not words
   const out = [];
   const scripts = [...src.matchAll(/<script\b[^>]*>([\s\S]*?)<\/script>/gi)].map((m) => m[1]);
   // string literals that read as words, not code (selectors, markup with handlers, expressions)
@@ -18,7 +19,15 @@ export function textSegments(html) {
   const body = src.replace(/<script\b[\s\S]*?<\/script>/gi, ' ');
   for (const m of body.matchAll(/\bdata-vo="([^"]*)"/g)) out.push(strip(m[1]));
   for (const t of body.split(/<[^>]+>/)) out.push(strip(t));
-  return out.filter((t) => /\p{L}/u.test(t));
+  return out.filter((t) => /\p{L}/u.test(t) && !junk(t));
+}
+
+// Not text a viewer reads: an icon token (ICO:check), a data URI, a file path or URL, SVG path data, digit runs.
+function junk(t) {
+  if (/^ICO:\w+$/i.test(t) || /\bdata:[\w-]+\//i.test(t) || /^(https?:|\.{0,2}\/)/i.test(t)) return true;
+  if (/(^|\s)[\w.-]+\/[\w./-]+|\.(m?js|css|html|json|png|jpe?g|webp|gif|svg|mp3|mp4|wav|m4a|woff2?)\b/i.test(t)) return true;
+  const chars = t.replace(/\s+/g, '');
+  return (chars.match(/\p{L}/gu) || []).length / chars.length < 0.5;   // mostly digits and signs: a path, a matrix, a list of numbers
 }
 
 const norm = (s) => s.toLowerCase().replace(/[’']/g, "'").replace(/[^\p{L}\p{N}' ]+/gu, ' ').replace(/\s+/g, ' ').trim();
@@ -30,7 +39,8 @@ export function templatePhrases(html) {
   const set = new Set();
   for (const seg of textSegments(html)) {
     const n = norm(seg);
-    if (n.split(' ').length >= 2 && n.length >= 8 && !COMMON.test(n)) set.add(n);
+    const words = n.split(' ');
+    if (words.length >= 2 && new Set(words).size >= 2 && n.length >= 8 && !COMMON.test(n)) set.add(n);   // "[Type], [Type]" is not a phrase
   }
   return [...set];
 }

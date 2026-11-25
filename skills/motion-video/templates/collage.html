@@ -66,7 +66,7 @@
 
   // three slots per wave, per format: [x, y] of each sticker, and the sticker's width
   const F = new URLSearchParams(location.search).get('format') || document.body.dataset.format || 'story';
-  const L = { story: { s: 400, at: [[60, 580], [560, 540], [290, 860]] }, feed: { s: 300, at: [[80, 420], [560, 400], [320, 700]] },
+  const L = { story: { s: 400, at: [[60, 580], [510, 540], [290, 860]] }, feed: { s: 300, at: [[80, 420], [560, 400], [320, 700]] },
     square: { s: 240, at: [[90, 300], [620, 290], [360, 560]] }, landscape: { s: 330, at: [[900, 160], [1400, 140], [1150, 520]] } }[F];
   const waves = [[1.2, 5.4], [6.2, 10.8]];   // each wave: first sticker lands, all peel off
   let h = '';

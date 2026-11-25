@@ -15,12 +15,13 @@
 <link rel="stylesheet" href="style.css">
 <style>
   /* the phone sits in a wrapper so the wrapper places and scales it, while the phone itself animates */
-  .ph-wrap { position: absolute; left: 50%; top: 600px; width: 560px; height: 1160px; margin-left: -280px; transform-origin: 50% 0; }
+  /* story spends its height: a larger phone that bleeds off the bottom, where the platform's caption sits anyway */
+  .ph-wrap { position: absolute; left: 50%; top: 540px; width: 560px; height: 1160px; margin-left: -280px; transform-origin: 50% 0; transform: scale(1.22); }
   body.feed .ph-wrap { top: 330px; transform: scale(.8); }
-  body.square .ph-wrap { top: 250px; transform: scale(.66); }
+  body.square .ph-wrap { top: 330px; transform: scale(.6); }   /* below the two title lines */
   .ph-wrap .phone { left: 0; top: 0; }
   /* the camera magnifies from the phone's top edge, so the phone never climbs over the headline */
-  .cam { transform-origin: 50% 600px; } body.feed .cam { transform-origin: 50% 330px; } body.square .cam { transform-origin: 50% 250px; }
+  .cam { transform-origin: 50% 540px; } body.feed .cam { transform-origin: 50% 330px; } body.square .cam { transform-origin: 50% 330px; }
   /* landscape: the headline on the left, the phone on the right */
   body.landscape .ph-wrap { left: 1180px; margin-left: 0; top: 90px; transform: scale(.78); }
   body.landscape .cam { transform-origin: 1398px 90px; }
@@ -72,7 +73,7 @@
   <!-- 3. The phone: one device, its screen changes with data-show. The camera punches in on the streak, then the
        phone grows past the frame (data-become): its screen becomes the ground of the next scene. -->
   <div class="cam" data-cam="6.55/.6 1.4 0 0; 8.2/.5 1 0 0">
-  <div class="ph-wrap stage3d" data-show="0,10.6">
+  <div class="ph-wrap stage3d" data-show="0,10.6" data-drift="2.4,9.9,1.1">
     <div class="phone" data-in="phoneIn@2.5/1.2" data-become="9.9/.6">
       <div class="screen">
         <div class="statusbar"><span>9:41</span><span>●●● ▮</span></div>
@@ -129,7 +130,7 @@
   // put real icons in the placeholders written as words above
   document.querySelectorAll('.box').forEach((b) => b.innerHTML = b.innerHTML.replace('CHECK', icon('check')));
   document.querySelectorAll('.remind .ico').forEach((b) => b.innerHTML = icon('bell'));
-  const dy = { story: 0, feed: -400, square: -560, landscape: -240 }[FORMAT];
+  const dy = { story: 0, feed: -400, square: -470, landscape: -240 }[FORMAT];
   chips(CHIPS.map((c) => ({ ...c, top: c.top + dy, ...(FORMAT === 'landscape' ? { side: 'left', inset: 940 } : {}) })));
   endcard({ at: 12.2, name: '[Name]', tagline: '[The promise, in one line]', stores: ['apple', 'google'], storeNote: 'Coming soon on', note: '[Address]' });
 </script>

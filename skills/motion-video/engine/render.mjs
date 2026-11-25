@@ -7,8 +7,10 @@
 //   node render.mjs video.html --still 3.5           one PNG at 3.5 s (check a moment)
 //   node render.mjs video.html --sheet               contact sheet: one frame every second, in one JPG
 //   node render.mjs video.html --sheet --every 0.25 --from 4 --to 7   a finer sheet around a transition
-//   node render.mjs video.html --scale 2             supersampled: rendered at twice the size, scaled down (lanczos)
-//   node render.mjs video.html --motion-blur 4       4 sub-frames blended into each frame (fast moves blur like film)
+//   node render.mjs video.html --scale 2             supersampled: rendered at twice the size, scaled down (lanczos), PNG frames
+//   node render.mjs video.html --png                 PNG frames at scale 1 (lossless; about 75 % slower than the default JPEG 100)
+//   node render.mjs video.html --motion-blur         8 sub-frames blended into each frame (fast moves blur like film;
+//                                                    --motion-blur N for another count; it costs N times the render)
 //   node render.mjs video.html --fps 60 --audio music.mp3 --out renders
 //   node render.mjs video.html --sfx off             no sound effects (they play when <body data-sfx="auto">
 //                                                    or elements carry data-sfx); --music-volume 0.55
@@ -27,9 +29,11 @@ import { synthesize, DEFAULT_VOICE } from './voice.mjs';
 const args = process.argv.slice(2);
 const opt = options(args);
 const file = args.find((a) => a.endsWith('.html'));
-if (!file) { console.error('usage: node render.mjs <video.html> [--format story,feed] [--still t] [--sheet [--every s --from t --to t]] [--fps 30] [--scale 2] [--motion-blur 4] [--audio file] [--out dir]'); process.exit(1); }
+if (!file) { console.error('usage: node render.mjs <video.html> [--format story,feed] [--still t] [--sheet [--every s --from t --to t]] [--fps 30] [--scale 2] [--motion-blur [N]] [--audio file] [--out dir]'); process.exit(1); }
 const scale = Math.max(1, Math.min(3, +opt('scale', 1) || 1));
-const blur = Math.max(1, Math.round(+opt('motion-blur', 1) || 1));
+// --motion-blur alone means 8 sub-frames: with 3 or 4, a fast move shows as separate copies instead of a blur
+const mb = opt('motion-blur');
+const blur = mb === undefined ? 1 : mb !== true && Number.isFinite(+mb) ? Math.max(1, Math.round(+mb)) : 8;
 
 const chromium = await loadPlaywright();
 const hasFfmpeg = spawnSync('ffmpeg', ['-version']).status === 0;
@@ -75,8 +79,10 @@ for (const format of formats) {
     if (!hasFfmpeg) { console.error('ffmpeg is not on the PATH (macOS: brew install ffmpeg · Debian/Ubuntu: sudo apt install ffmpeg · Windows: winget install ffmpeg)'); process.exit(1); }
     const frames = Math.round(duration * fps); const f = join(out, `${tag}.mp4`);
     const music = opt('audio'); const cues = opt('sfx') === 'off' ? [] : await page.evaluate(() => window.soundCues ? window.soundCues() : []);
-    // frames go to ffmpeg as PNG (lossless: x264 compresses once); --motion-blur sends N sub-frames per frame
-    const ffArgs = ['-y', '-loglevel', 'error', '-f', 'image2pipe', '-c:v', 'png', '-framerate', String(fps * blur), '-i', '-'];
+    // frames go to ffmpeg as JPEG at quality 100 (SSIM 0.997 against PNG, 75 % faster to capture), or as PNG with
+    // --scale 2 or --png (lossless: x264 compresses once); --motion-blur sends N sub-frames per frame
+    const png = scale > 1 || !!opt('png');
+    const ffArgs = ['-y', '-loglevel', 'error', '-f', 'image2pipe', '-c:v', png ? 'png' : 'mjpeg', '-framerate', String(fps * blur), '-i', '-'];
     const vo = opt('voice') === 'off' ? { lines: [] } : await page.evaluate(() => window.voiceLines ? window.voiceLines() : { lines: [] });
     const voice = vo.lines.length ? await synthesize(vo.lines, { root: site.root, voice: (opt('voice') !== true && opt('voice')) || vo.voice || DEFAULT_VOICE, rate: vo.rate }) : [];
     let wav = null;
@@ -89,21 +95,40 @@ for (const format of formats) {
     }
     const [W, H] = SIZES[format]; const vf = [];
     if (blur > 1) vf.push(`tmix=frames=${blur}`, `select='eq(mod(n\\,${blur})\\,${blur - 1})'`, `setpts=N/(${fps}*TB)`);
-    if (scale > 1) vf.push(`scale=${W}:${H}:flags=lanczos`);
-    if (vf.length) ffArgs.push('-vf', vf.join(','));
+    // to the delivery size (lanczos when supersampled), in TV range: JPEG frames are full range, and a full-range
+    // MP4 (yuvj420p) plays with crushed or washed-out blacks on some phones
+    vf.push(`scale=${W}:${H}:flags=lanczos:out_range=tv`, 'format=yuv420p');
+    ffArgs.push('-vf', vf.join(','));
     ffArgs.push('-r', String(fps), '-c:v', 'libx264', '-preset', 'slow', '-crf', '18', '-pix_fmt', 'yuv420p', '-movflags', '+faststart', f);
     const ff = spawn('ffmpeg', ffArgs, { stdio: ['pipe', 'inherit', 'inherit'] });
+    ff.stdin.on('error', () => {});                   // ffmpeg gone: handled below, not an uncaught EPIPE
+    let ffDone = false; const ffClosed = new Promise((r) => ff.on('close', (code) => { ffDone = true; r(code); }));
+    // a failed render leaves nothing behind: no half-written MP4, no temporary sound file
+    const fail = async (why) => {
+      ff.stdin.destroy(); ff.kill('SIGKILL'); await ffClosed;
+      await rm(f, { force: true }); if (wav) await rm(wav, { force: true });
+      console.error(`\n${tag}: render stopped, ${why}. Nothing was written.`); await browser.close(); site.close(); process.exit(1);
+    };
+    // a capture that times out (a heavy frame, a busy machine) is tried once more before the render stops
+    const shot = png ? { type: 'png' } : { type: 'jpeg', quality: 100 };
+    const shoot = async () => {
+      try { return await page.screenshot({ ...shot, timeout: 60000 }); } catch {
+        try { return await page.screenshot({ ...shot, timeout: 120000 }); } catch (e) { await fail(`a frame could not be captured twice (${e.message.split('\n')[0]}); close other renders and checks, or render without --scale`); }
+      }
+    };
     for (let i = 0; i < frames; i++) {
       // sub-frames spread over half the frame interval: a 180° shutter, as a film camera blurs
       for (let k = 0; k < blur; k++) {
         await page.evaluate((t) => window.seek(t), i / fps + (blur > 1 ? (k / blur) * (0.5 / fps) : 0));
-        const buf = await page.screenshot({ type: 'png' });
-        if (!ff.stdin.write(buf)) await new Promise((r) => ff.stdin.once('drain', r));
+        const buf = await shoot();
+        if (ffDone) await fail('ffmpeg stopped early (its error is above)');
+        if (!ff.stdin.write(buf)) await new Promise((r) => { ff.stdin.once('drain', r); ff.once('close', r); });
       }
       if (i % fps === 0) process.stdout.write(`\r${tag}: ${Math.round((i / frames) * 100)}%   `);
     }
-    ff.stdin.end(); await new Promise((r) => ff.on('close', r));
+    ff.stdin.end(); const code = await ffClosed;
     if (wav) await rm(wav, { force: true });
+    if (code !== 0) { await rm(f, { force: true }); console.error(`\n${tag}: ffmpeg failed (exit ${code}); nothing was written.`); process.exit(1); }
     console.log(`\rvideo ${f} (${duration}s, ${fps} fps${scale > 1 ? `, ×${scale} supersampled` : ''}${blur > 1 ? `, motion blur ${blur}` : ''})`);
   }
   await page.close();

@@ -1,5 +1,8 @@
 /* Pastel pop — soft lilac/peach ground, rounded shapes, playful bounce. Consumer apps, kids, lifestyle, food. */
 @import url("https://fonts.googleapis.com/css2?family=Nunito:wght@500;700;800;900&display=swap");
-:root { --bg: #f6f0ff; --bg2: #ffe7dc; --ink: #2a1f4a; --muted: #7a6f99; --accent: #ff7a59; --accent-ink: #fff; --accent2: #7b61ff;
+:root { --bg: #f6f0ff; --bg2: #ffe7dc; --ink: #2a1f4a; --muted: #7a6f99; --accent: #ff7a59; --accent-ink: #2a1f4a; --accent2: #7b61ff;
   --card: #ffffff; --card-ink: #2a1f4a; --line: rgba(42,31,74,.10); --font: "Nunito", system-ui, sans-serif; --display-weight: 900; --tracking: -0.025em;
   --radius: 44px; --shadow: 0 30px 70px rgba(123,97,255,.18); --screen-bg: #fff; --screen-ink: #2a1f4a; --end-bg: #f6f0ff; }
+/* the peach accent is a fill, not a text colour: words in .accent take a deeper shade (4.6:1 on the lilac ground; the
+   peach itself is 2.3:1), and ink on peach buttons and chips (5.9:1, white was 2.6:1) */
+.accent { color: #c63d22; }

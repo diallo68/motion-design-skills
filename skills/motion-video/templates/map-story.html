@@ -24,10 +24,11 @@
   body.square .h1 { font-size: 80px; } body.square .sub { font-size: 36px; margin-top: 10px; }
   #map { position: absolute; z-index: 2; }
   #map svg { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
-  .land { fill: var(--accent); fill-opacity: 0; stroke: var(--accent); stroke-width: 5; stroke-linejoin: round; stroke-dasharray: 5200; stroke-dashoffset: 5200; vector-effect: non-scaling-stroke; }
+  .land { fill: var(--accent-on-dark, var(--accent)); fill-opacity: 0; stroke: var(--accent-on-dark, var(--accent));   /* a dark accent gets lost on this night map: the style can give a lighter one */
+    stroke-width: 5; stroke-linejoin: round; stroke-dasharray: 5200; stroke-dashoffset: 5200; vector-effect: non-scaling-stroke; }
   @keyframes trace { to { stroke-dashoffset: 0 } }
   @keyframes fillIn { to { fill-opacity: .16 } }
-  .dot { position: absolute; width: 30px; height: 30px; margin: -15px 0 0 -15px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 0 10px color-mix(in srgb, var(--accent) 25%, transparent), 0 0 40px var(--accent); z-index: 5; }
+  .dot { position: absolute; width: 30px; height: 30px; margin: -15px 0 0 -15px; border-radius: 50%; --a: var(--accent-on-dark, var(--accent)); background: var(--a); box-shadow: 0 0 0 10px color-mix(in srgb, var(--a) 25%, transparent), 0 0 40px var(--a); z-index: 5; }
   .dot.empty { background: #3A3C5A; box-shadow: 0 0 0 8px rgba(255,255,255,.08); }
   .dot.big { width: 46px; height: 46px; margin: -23px 0 0 -23px; }
   .lab { position: absolute; z-index: 6; background: #fff; color: #1A1A2E; border-radius: 18px; padding: 10px 16px; font: 800 32px/1 var(--font); white-space: nowrap; box-shadow: 0 10px 24px rgba(0,0,0,.35); }
@@ -87,10 +88,12 @@
     h += `<div class="dot empty" style="left:${x}px;top:${y}px" data-in="pop@${(9.9 + i * .12).toFixed(2)}/.4"></div>`;
     h += `<div class="q" data-check="ui" style="left:${x}px;top:${y}px" data-in="pop@${(10.3 + i * .12).toFixed(2)}/.35">?</div>`;
   });
-  // three products pop out of the main town, to its right
+  // three products pop out of the main town, to its right, clear of its own label (below the dot) and of the next town's
   const [mx, my] = px(main.x, main.y);
   PRODUCTS.forEach((p, i) => {
-    const [dx, dy] = [[240, -20], [400, 60], [310, 170]][i].map((v) => v * Math.max(k, .8)), a = 4.6 + i * .25;
+    // the square map is small, so the bubbles sit lower there, between the next town's label and the main one's
+    const off = F === 'square' ? [[330, 0], [480, 70], [400, 200]] : [[300, -60], [460, 20], [420, 150]];
+    const [dx, dy] = off[i].map((v) => v * Math.max(k, .8)), a = 4.6 + i * .25;
     h += `<div class="bub" style="left:${mx + dx}px;top:${my + dy}px" data-show="${a},9.2" data-in="pop@${a}/.45" data-out="outScale@9/.25"><img src="${p.img || standIn(p, i)}" alt=""></div>`;
   });
   map.innerHTML = `<div style="position:absolute;inset:0" data-out="fadeOut@13.1/.3">${h}</div>`;

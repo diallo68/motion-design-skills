@@ -44,7 +44,7 @@ be captured, from the app's own code and colours. Ask at most three short questi
 | `square` | 1080×1080 (1:1) | feeds, marketplaces, X |
 | `landscape` | 1920×1080 (16:9) | YouTube, website hero, presentations, LinkedIn desktop |
 
-The three templates lay out all four formats (landscape puts the text beside the device). Declare the ones the
+The eight templates lay out all four formats (landscape puts the text beside the device). Declare the ones the
 person needs in `<body data-formats>`, and `check` every one: a layout that works in story often overflows in
 feed or landscape.
 
@@ -101,8 +101,8 @@ each format composed for itself, end card 2.5–3 s).
 - **Timing**: eases by role, exits half the entrance, a landed line holds still, entrances varied (moves.md,
   Timing). Floating loops and tap rings are options, not defaults: show the UI acting and the press answering.
 - **The frame never freezes.** A landed line holds still, but the frame keeps moving: every beat gets a slow
-  push (`data-drift="start,end"` on its scene or device, scale 1 → 1.04 over the beat) unless something else moves
-  through it (the UI acting, a camera move, a 3D orbit). `check` reports more than 0.8 s with no pixel changing as
+  push (`data-drift="start,end"` on its scene or device, scale 1 → 1.07 over the beat) unless something else moves
+  through it (the UI acting, a camera move, a 3D orbit). `check` reports 0.8 s where the frame barely changes (a moving background alone does not count) as
   `dead-time`, and a beat of more than 3.5 s where only one thing enters as `long-beat`.
 
 ### 5. Start the project
@@ -114,6 +114,8 @@ cd <folder> && npm install && npx playwright install chromium
 
 `init` copies the engine, the style (as `style.css`) and the template (as `<name>.html`). Several videos can share
 one folder: run `init` again with another `--name`.
+A template just made by `init` fails `check` with `template-leftover` (reported once, for the page) until every
+`[placeholder]` and template phrase is replaced: that error is the list of what is left to write.
 
 ### 6. Build the video
 
@@ -125,7 +127,7 @@ full API; the essentials:
   <div class="mid center" data-out="outBlur@2.2">                       <!-- leaves at 2.2 s -->
     <div class="display" data-words=".2,.1">Meet <span class="accent">Tempo</span></div>  <!-- words one by one -->
   </div>
-  <div class="ph-wrap stage3d"><div class="phone" data-in="tiltIn@2.4/1.1" data-loop="floatTilt/5">…</div></div>
+  <div class="ph-wrap stage3d"><div class="phone" data-in="tiltIn@2.4/1.1" data-drift="3.5,7">…</div></div>
   <div data-show="5,9">shown from 5 s to 9 s</div>
 <script src="engine/motion.js"></script>
 <script>chips([...]); endcard({ at: 9.5, name: 'Tempo', stores: ['apple','google'] });</script>
@@ -159,9 +161,10 @@ node engine/render.mjs video.html --still 4.2 --format feed
 
 `check` plays the video and measures every line of text every 0.1 s: text under the platform's buttons
 (`safe-zone`), off the frame or cut by its box, two texts overlapping, text covered by something opaque or by a
-device or picture (`object-over-text`, probed at five points along each line), lines not held long enough to read
+device or picture (`object-over-text`, probed at five points across each line and three heights, so a device over the bottom
+of the letters counts), lines not held long enough to read
 (0.5 s + 0.3 s a word; the last line 2 s), weak contrast, small letters, too many words at once, a title ending on
-a single word (`orphan`), a short end card, missing files, frames frozen for more than 0.8 s (`dead-time`), long
+a single word (`orphan`), a short end card, missing files, frames that read as frozen for 0.8 s, backgrounds aside (`dead-time`), long
 beats where one thing enters (`long-beat`), and template text left in the video (`template-leftover`). Fix every
 error and run it again until it says `0 errors`; weigh each warning. Never silence a finding with `data-check` to
 make it pass: only real UI inside a device (`ui`), small print (`note`) or a designed overlap (`overlap`) gets one.
@@ -188,12 +191,15 @@ Show the user the scores with the sheets when you deliver.
 node engine/render.mjs video.html                     # MP4 per format in renders/ (H.264, 30 fps), with its effects
 node engine/render.mjs video.html --audio music.mp3   # music under the effects, faded in and out (--music-volume 0.55)
 node engine/render.mjs video.html --sfx off           # silent
-node engine/render.mjs video.html --scale 2 --motion-blur 4   # final quality: supersampled, film-like blur on fast moves
+node engine/render.mjs video.html --scale 2 --motion-blur   # final render only: supersampled, film-like blur (8 sub-frames)
 ```
 
-For the files that will be posted, render with `--scale 2` (every frame at twice the size, scaled down with
-lanczos: finer text and 3D edges) and `--motion-blur 4` on films with whips and fast moves (four sub-frames
-blended into each frame). They take about 2× and 4× longer; use them once the film is final. Deliver the MP4 that
+For the files that will be posted, and only for them, render with `--scale 2` (every frame at twice the size, PNG,
+scaled down with lanczos: finer 3D edges and pictures; flat HTML text gains little) and `--motion-blur` on films
+with whips and fast moves (8 sub-frames blended into each frame; with 3 or 4 a fast move shows as separate copies).
+Their cost, measured on a laptop: `--scale 2` multiplies the render time by 4 to 5 (a 12 s story: about 15 min
+instead of 3), `--motion-blur N` by N, and both multiply (×35 or more). Draft, check and review the sheets at
+`--scale 1`; render the final once. Deliver the MP4 that
 `render.mjs` wrote as it is: re-encoding it (an editor's export, a converter, a messaging app) compresses it a
 second time and softens the text.
 
@@ -267,4 +273,5 @@ product as if it were the client's.
   `references/engine.md` — every attribute, helper and keyframe · `references/troubleshooting.md`
 - `scripts/init.mjs` — new project · `scripts/capture-app.mjs` — capture the running app (Android, iOS simulator)
   · `scripts/capture.mjs` — capture a live web page · `scripts/geo-outline.mjs` — a GeoJSON area and its places as
-  the outline and points of `map-story` (offline)
+  the outline and points of `map-story` (offline) · `scripts/test-templates.mjs` — for whoever edits the skill:
+  every template in every style and format through `check`, as a grid

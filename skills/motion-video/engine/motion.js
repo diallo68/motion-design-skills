@@ -14,7 +14,7 @@
 //   data-tap="5.2"                a tap ring at 5.2 s (put it on a .tap element; prefer press on the tapped thing)
 //   data-in="fadeUp@1.2/.8:move"  any timing may name its ease: arrive, move, leave, pop, linear (default by role)
 //   data-cam="2/.6 1.8 0 -240; 4/.5 1 0 0"  camera on a wrapper: at/duration scale x y [ease], states in order
-//   data-drift="2.4,6.3"          a slow push-in from 2.4 s to 6.3 s (scale 1 → 1.04, linear; "2.4,6.3,1.06" sets the end
+//   data-drift="2.4,6.3"          a slow push-in from 2.4 s to 6.3 s (scale 1 → 1.07, linear; "2.4,6.3,1.1" sets the end
 //                                 scale): the frame keeps moving while a landed line holds still. It uses the CSS `scale`
 //                                 property, so it adds to the element's entrance, camera and format transforms
 //   data-become="9.9/.6"          the element grows past the frame (its fill becomes the next scene)
@@ -192,7 +192,7 @@
     document.querySelectorAll('[data-drift]').forEach((el) => {
       const [a, b, to] = el.dataset.drift.split(',').map(Number);
       const p = Math.max(0, Math.min(1, (t - a) / ((b - a) || 1)));
-      el.style.scale = String(1 + ((to || 1.04) - 1) * p);
+      el.style.scale = String(1 + ((to || 1.07) - 1) * p);
     });
   }
 
@@ -207,8 +207,33 @@
     camera(t);
     drift(t);
   }
+  // ---------- baked mesh (.bg-mesh): drawn once, small, on a canvas, then stretched ----------
+  // Three soft colour blobs. As CSS gradients over a frame bigger than the video they cost seconds a frame at
+  // render.mjs --scale 2 (software raster, every frame); a picture an eighth of the size, scaled up, looks the
+  // same (it has no detail to lose) and costs nothing. Colours come from the style: --accent, --accent2, --bg2.
+  function bakeMesh() {
+    const blobs = [[0.2, 0.2, 0.46, 0.41, '--accent'], [0.8, 0.3, 0.46, 0.41, '--accent2'], [0.5, 0.9, 0.56, 0.46, '--bg2']];
+    document.querySelectorAll('.bg-mesh:not([data-baked])').forEach((el) => {
+      const W = el.offsetWidth, H = el.offsetHeight; if (!W || !H) return;
+      const w = Math.max(16, Math.round(W / 8)), h = Math.max(16, Math.round(H / 8));
+      const c = document.createElement('canvas'); c.width = w; c.height = h; const g = c.getContext('2d');
+      const cs = getComputedStyle(el); const op = +cs.opacity;   // drawn into the picture: a translucent layer this size costs too
+      for (const [cx, cy, rx, ry, v] of blobs) {
+        g.fillStyle = cs.getPropertyValue(v).trim() || '#888'; const rgb = g.fillStyle;   // normalised: #rrggbb or rgba()
+        const m = rgb.startsWith('#') ? rgb.slice(1).match(/../g).map((x) => parseInt(x, 16)) : rgb.match(/[\d.]+/g).slice(0, 3).map(Number);
+        const at = (a) => `rgba(${m[0]},${m[1]},${m[2]},${a * op})`;
+        g.save(); g.translate(cx * w, cy * h); g.scale(rx * w, ry * h);
+        const gr = g.createRadialGradient(0, 0, 0, 0, 0, 1);
+        gr.addColorStop(0, at(1)); gr.addColorStop(0.35, at(0.5)); gr.addColorStop(0.62, at(0.12)); gr.addColorStop(0.82, at(0));
+        g.fillStyle = gr; g.fillRect(-2, -2, 4, 4); g.restore();
+      }
+      el.style.background = `url(${c.toDataURL()}) 0 0 / 100% 100% no-repeat`; el.style.opacity = '1'; el.dataset.baked = '1';
+    });
+  }
+
   window.seek = (t) => {
     compile();
+    bakeMesh();
     measure();
     apply(t);
     document.querySelectorAll('[data-type]').forEach((el) => {

@@ -2,7 +2,7 @@
 <!-- TEMPLATE iso-promo · 12 s · story / feed / square / landscape — an app promo in isometric 3D (engine/scene3d.js)
      One continuous shot, as in isometric showreels: the ground rises, the objects come out of it one by one, the
      phone shows the app, answer cards pop beside it, the camera turns a few degrees; titles are HTML above the 3D.
-     Beats: 0-3 ground and hook · 3-6.2 phone with the app · 6.2-9.2 cards and a punch-in · 9.2-12 end card.
+     Beats: 0-3 ground, the props landing one a second, and the hook · 3-6.2 phone with the app · 6.2-9.2 cards and a punch-in · 9.2-12 end card.
      Replace the stand-in screen (uiTexture) with real captures: node <skill>/scripts/capture-app.mjs home, then
      phone({ screen: 'assets/screens/home.png' }) and s.screens(phone, [{ at, src }]) to change it on the beat.
      Needs three.js in the project: npm i three (init.mjs adds it).
@@ -40,10 +40,14 @@
   import { stage } from './engine/scene3d.js';
   const css = (v) => getComputedStyle(document.body).getPropertyValue(v).trim();
   const ACCENT = css('--accent') || '#0a7b4b';
-  // where the scene sits in each format: under the title, or on the right in landscape
-  const frame = { story: { top: 0.33, bottom: 0.9 }, feed: { top: 0.3, bottom: 0.96 }, square: { top: 0.27, bottom: 0.97 },
+  // where the scene sits in each format: under the title, or on the right in landscape. Story spends its height: the
+  // scene starts under the title's first line and bleeds off the bottom, where the platform's caption sits anyway
+  const frame = { story: { top: 0.2, bottom: 1.04 }, feed: { top: 0.3, bottom: 0.96 }, square: { top: 0.27, bottom: 0.97 },
     landscape: { top: 0.08, bottom: 0.95, left: 0.48, right: 0.97 } }[FORMAT];
   const s = await stage({ camera: 'iso', light: 'soft', frame });
+  // a slow push on the whole scene through the film, under the props landing: the frame never holds still, and the
+  // titles above stay inside the safe zone
+  document.querySelector('.stage3d-canvas').dataset.drift = '.4,9.2,1.12';
 
   const ground = s.place(s.slab(10, 10, { color: 0xf4e8cf }));
   const tiles = s.place(s.tiles(3, 2.6, 0.3, 0xe8d8b4));
@@ -54,21 +58,24 @@
   phone.scale.setScalar(1.15);
   s.rise(phone, 3.1, { dur: 0.9, depth: 9 });
   s.screens(phone, [{ at: 0, src: home },
+                    { at: 4.8, src: s.uiTexture({ title: '[Screen]', rows: ['[Item]  ✓', '[Item]', '[Item]'], accent: ACCENT }) },   // the UI acts
                     { at: 6.3, src: s.uiTexture({ title: '[Result]', rows: ['[The answer]  ✓', '[Item]', '[Item]'], accent: ACCENT }) }]);
 
-  // props: the client's world, as objects (neutral blocks here)
+  // props: the client's world, as objects (neutral blocks here). They build the hook: something lands before 1 s
+  // and every second after it, so the opening never holds on an empty ground
   const base = s.place(s.block(2.2, 1.1, 1.8, ACCENT), -2.9, 0, 1.9);
-  s.drop(base, 3.6, { dur: 0.8, height: 7 });
+  s.drop(base, 0.7, { dur: 0.8, height: 7 });
   const top = s.place(s.block(1.2, 0.8, 1.2, 0xf5b700), -2.9, 1.1, 1.9, 0.5);
-  s.pop(top, 4.3);
+  s.pop(top, 1.6);
   const side = s.place(s.block(1.4, 0.5, 0.9, 0xe9dcc0), 2.6, 0, 3.0, 0.9);
-  s.slide(side, 4.6, { from: [3, 0, 2] });
+  s.slide(side, 2.3, { from: [3, 0, 2] });
 
   const cards = [0, 1, 2].map((i) => s.place(s.card({ accent: i === 1 ? ACCENT : 0xd8d1c1 }), 3.5 + i * 0.3, 6.6 - i * 1.0, 1.3 + i * 0.3, Math.PI / 4 - 0.12));
   cards.forEach((c, i) => s.pop(c, 6.4 + i * 0.25));
   const coin = s.place(s.coin({ color: ACCENT }), -1.6, 8.4, 0.9, Math.PI / 4 - 0.12);
   s.pop(coin, 7.3, { dur: 0.6 });
 
+  s.zoom(0, .01, { story: 1.4, feed: 1, square: 1, landscape: 1 }[FORMAT]);   // story: the scene fills the height, its ground bleeds off the sides
   s.orbit(0, 12, 8);              // the world turns slowly through the whole shot
   s.zoom(6.2, 0.8, 1.18);         // punch in on the answers
   s.zoom(8.6, 0.6, 1 / 1.18);

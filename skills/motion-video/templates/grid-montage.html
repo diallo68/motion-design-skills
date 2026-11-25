@@ -25,7 +25,7 @@
   @keyframes collapse { to { opacity: 0; transform: scale(.2) } }
   .band { position: absolute; left: 0; right: 0; top: calc(var(--H) / 2 - 230px); height: 460px; z-index: 5; background: linear-gradient(transparent, #0B0B12 20%, #0B0B12 80%, transparent); }
   .word { position: absolute; left: 70px; right: 150px; top: calc(var(--H) / 2 - 140px); z-index: 6; text-align: center; font: 900 150px/1 var(--font); letter-spacing: -.06em; color: #fff; }
-  .word .o { color: var(--word-accent, var(--accent)); }   /* set --word-accent to a lighter brand tint if the accent is dark */
+  .word .o { color: var(--word-accent, var(--accent-on-dark, var(--accent))); }   /* set --word-accent to a lighter brand tint if the accent is dark */
   .word.sm { font-size: 112px; top: calc(var(--H) / 2 - 110px); }
   body:not(.story) .word { left: 70px; right: 70px; }
   body.square .word { font-size: 130px; top: calc(var(--H) / 2 - 120px); } body.square .word.sm { font-size: 96px; top: calc(var(--H) / 2 - 95px); }
