@@ -27,7 +27,7 @@ quality check, looks at the frames on a contact sheet and renders the MP4s.
 
 **Any agent that reads skills** (Claude Code, Codex, Cursor…) with the [`skills` CLI](https://github.com/vercel-labs/agent-skills):
 ```bash
-npx skills add https://github.com/diallo68/motion-design-skills --skill motion-video
+npx skills add https://github.com/diallo68/motion-design-skills --skill bowe-motion-video
 ```
 
 **From a clone** (links the skill, so `git pull` updates it):
@@ -41,7 +41,7 @@ Playwright's Chromium once (`npm install && npx playwright install chromium`); t
 ## Use it by hand
 
 ```bash
-node skills/motion-video/scripts/init.mjs my-launch --template app-promo --style midnight-glow
+node skills/bowe-motion-video/scripts/init.mjs my-launch --template app-promo --style midnight-glow
 cd my-launch && npm install && npx playwright install chromium
 node engine/check.mjs video.html               # what a viewer would notice, each with its fix
 node engine/render.mjs video.html --sheet      # contact sheet of frames, to look at the layout
@@ -59,7 +59,7 @@ Open `video.html?format=feed&t=4` in a browser to look at any moment while you e
   `scripts/geo-outline.mjs` makes the outline from a GeoJSON country or region), `parcel-3d` 14.4 s (an unboxing in 3D),
   `grid-montage` 13.4 s (a grid cutting on the beat).
 - **6 styles**: `midnight-glow`, `pastel-pop`, `bold-type`, `clean-light`, `neon-lime`, `warm-editorial`.
-- **28 moves** documented with markup in `skills/motion-video/references/moves.md`, including transitions with a
+- **28 moves** documented with markup in `skills/bowe-motion-video/references/moves.md`, including transitions with a
   cause (punch-in camera, object becomes the world, iris from the tap, colour flood, whip), the UI acting (a
   finger picks an answer, a chat writes itself, progress fills), the slow push that keeps every beat alive, and
   eases by role.

@@ -1,0 +1,126 @@
+// Voice-over for bowe-motion-video: turns the page's lines into WAV files, timed on the video.
+//
+// Providers, set by <body data-voice="…"> or render/check --voice "…":
+//   piper:fr_FR-siwis-medium          free and offline (default). A speaker: piper:fr_FR-upmc-medium#pierre
+//   google:fr-FR-Neural2-A            Google Cloud Text-to-Speech; needs GOOGLE_TTS_API_KEY in the environment
+//   kokoro:ff_siwis                   Kokoro, natural and offline (French: ff_siwis; English: af_heart, bm_george…)
+//   chatterbox:fr                     Chatterbox Multilingual (natural, 23 languages) through Hugging Face;
+//   chatterbox:fr@assets/voice/ref.wav  … speaking with the voice of a 10-30 s recording (consent required)
+//   (any line with a file)            a recorded voice: window.VOICE = [{ at: 1.2, file: 'assets/voice/01.m4a' }]
+// Speed: data-voice-rate="1.1" (1 = normal). Lines are cached in .voice/ next to the video, keyed by their text.
+import { spawnSync } from 'node:child_process';
+import { createHash } from 'node:crypto';
+import { existsSync, mkdirSync, readFileSync, realpathSync, writeFileSync } from 'node:fs';
+import { homedir } from 'node:os';
+import { join, resolve, dirname } from 'node:path';
+import { fileURLToPath } from 'node:url';
+
+export const PIPER_DIR = process.env.PIPER_VOICES || join(homedir(), '.cache', 'motion-video', 'piper');
+export const DEFAULT_VOICE = 'piper:fr_FR-siwis-medium';
+export const CHATTERBOX_PY = process.env.CHATTERBOX_PYTHON || join(homedir(), '.cache', 'motion-video', 'chatterbox-venv', 'bin', 'python');
+
+// Kokoro: runs here (kokoro-onnx), spec is a voice name such as ff_siwis or af_heart
+function kokoro(text, voice, rate, out) {
+  if (!existsSync(CHATTERBOX_PY) || !existsSync(join(homedir(), '.cache', 'motion-video', 'kokoro', 'kokoro-v1.0.onnx'))) throw new Error('Kokoro is not set up: run `node <skill>/scripts/voice-setup.mjs --kokoro` once.');
+  const tmp = `${out}.part.wav`;
+  const r = spawnSync(CHATTERBOX_PY, [join(dirname(fileURLToPath(import.meta.url)), 'kokoro.py'), JSON.stringify({ text, voice: voice || 'ff_siwis', speed: rate, out: tmp })], { encoding: 'utf8', timeout: 300000 });
+  if (r.status || !existsSync(tmp)) { spawnSync('rm', ['-f', tmp]); throw new Error(`Kokoro failed: ${(r.stderr || '').trim().split('\n').pop()}`); }
+  spawnSync('ffmpeg', ['-y', '-loglevel', 'error', '-i', tmp, '-af', 'silenceremove=start_periods=1:start_threshold=-45dB,areverse,silenceremove=start_periods=1:start_threshold=-45dB,areverse,apad=pad_dur=0.08', '-ar', '48000', out]);
+  spawnSync('rm', ['-f', tmp]);
+}
+
+// Chatterbox: the model runs on Hugging Face (any machine works); spec "fr" or "fr@path/to/reference.wav"
+function chatterbox(text, spec, rate, out, root, opts = {}) {
+  if (!existsSync(CHATTERBOX_PY)) throw new Error('Chatterbox is not set up: run `node <skill>/scripts/voice-setup.mjs --chatterbox` once.');
+  const [lang, ref] = spec.split('@');
+  const refPath = ref ? resolve(root, ref) : null;
+  if (refPath && !existsSync(refPath)) throw new Error(`reference voice not found: ${ref}`);
+  const tmp = `${out}.part.wav`;                                    // the cache only ever holds finished lines
+  // Chatterbox sometimes keeps talking after the text ends: a line much longer than its text is generated again
+  // with another seed, and if it still runs on, cut at the first pause after the expected length.
+  const expected = Math.max(1.2, text.length / 13);                  // French speech: about 13 characters a second
+  let ok = false;
+  for (const seed of [42, 7, 1234]) {
+    const job = { text, lang: lang || 'fr', ref: refPath, out: tmp, exaggeration: opts.exaggeration ?? 0.5, cfg: opts.cfg ?? 0.5, temperature: 0.8, seed };
+    const r = spawnSync(CHATTERBOX_PY, [join(dirname(fileURLToPath(import.meta.url)), 'chatterbox.py'), JSON.stringify(job)], { encoding: 'utf8', timeout: 300000 });
+    if (r.status || !existsSync(tmp)) { spawnSync('rm', ['-f', tmp]); throw new Error(`Chatterbox failed: ${(r.stderr || '').trim().split('\n').pop()}`); }
+    if (duration(tmp) <= expected * 1.8 + 1) { ok = true; break; }
+  }
+  if (!ok) {
+    const log = spawnSync('ffmpeg', ['-hide_banner', '-i', tmp, '-af', 'silencedetect=n=-40dB:d=0.35', '-f', 'null', '-'], { encoding: 'utf8' }).stderr;
+    const cut = [...log.matchAll(/silence_start: ([\d.]+)/g)].map((m) => +m[1]).find((t) => t >= expected * 0.6);
+    if (cut) { spawnSync('ffmpeg', ['-y', '-loglevel', 'error', '-i', tmp, '-t', String(cut + 0.1), `${tmp}.cut.wav`]); spawnSync('mv', [`${tmp}.cut.wav`, tmp]); }
+  }
+  // trim leading and trailing silence so the line starts when it is placed
+  spawnSync('ffmpeg', ['-y', '-loglevel', 'error', '-i', tmp, '-af', 'silenceremove=start_periods=1:start_threshold=-45dB,areverse,silenceremove=start_periods=1:start_threshold=-45dB,areverse,apad=pad_dur=0.08', `${tmp}.trim.wav`]);
+  spawnSync('mv', [`${tmp}.trim.wav`, tmp]);
+  if (rate !== 1) { spawnSync('ffmpeg', ['-y', '-loglevel', 'error', '-i', tmp, '-af', `atempo=${rate}`, out]); spawnSync('rm', ['-f', tmp]); }
+  else spawnSync('mv', [tmp, out]);
+}
+
+const which = (cmd) => { const r = spawnSync('sh', ['-c', 'command -v "$0"', cmd], { encoding: 'utf8' }); return r.status === 0 ? r.stdout.trim() : null; };
+export const piperBin = () => which('piper') || (existsSync(join(homedir(), '.local/bin/piper')) ? join(homedir(), '.local/bin/piper') : null);
+const duration = (f) => +spawnSync('ffprobe', ['-v', 'error', '-show_entries', 'format=duration', '-of', 'csv=p=0', f], { encoding: 'utf8' }).stdout.trim();
+
+function piper(text, spec, rate, out) {
+  const bin = piperBin();
+  if (!bin) throw new Error('Piper is not installed: run `node <skill>/scripts/voice-setup.mjs` once.');
+  const [model, speakerName] = spec.split('#');
+  const onnx = join(PIPER_DIR, `${model}.onnx`);
+  if (!existsSync(onnx)) throw new Error(`Voice ${model} is not downloaded: run \`node <skill>/scripts/voice-setup.mjs ${model}\`.`);
+  const args = ['-m', onnx, '-f', out, '--length-scale', String((1 / rate).toFixed(3)), '--sentence-silence', '0.15'];
+  if (speakerName) {
+    const map = JSON.parse(readFileSync(`${onnx}.json`, 'utf8')).speaker_id_map || {};
+    if (!(speakerName in map)) throw new Error(`${model} has no speaker "${speakerName}" (it has: ${Object.keys(map).join(', ') || 'one voice'})`);
+    args.push('-s', String(map[speakerName]));
+  }
+  const r = spawnSync(bin, args, { input: text, encoding: 'utf8' });
+  if (r.status || !existsSync(out)) throw new Error(`Piper failed: ${r.stderr}`);
+}
+
+async function google(text, name, rate, out) {
+  const key = process.env.GOOGLE_TTS_API_KEY;
+  if (!key) throw new Error('GOOGLE_TTS_API_KEY is not set: create an API key restricted to the Text-to-Speech API in Google Cloud and export it in your shell profile.');
+  const res = await fetch('https://texttospeech.googleapis.com/v1/text:synthesize', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'X-Goog-Api-Key': key },   // the key travels in a header, never in the URL
+    body: JSON.stringify({ input: { text }, voice: { languageCode: name.split('-').slice(0, 2).join('-'), name }, audioConfig: { audioEncoding: 'LINEAR16', sampleRateHertz: 48000, speakingRate: rate } }),
+  });
+  const j = await res.json();
+  if (!res.ok) throw new Error(`Google TTS: ${j.error?.message || res.status}`);
+  writeFileSync(out, Buffer.from(j.audioContent, 'base64'));
+}
+
+// lines: [{ at, text } | { at, file }] → [{ at, file, dur, text }], ready to mix and to check.
+export async function synthesize(lines, { root, voice = DEFAULT_VOICE, rate = 1 }) {
+  const cache = join(root, '.voice'); mkdirSync(cache, { recursive: true });
+  const [provider, spec] = voice.includes(':') ? [voice.slice(0, voice.indexOf(':')), voice.slice(voice.indexOf(':') + 1)] : ['piper', voice];
+  const out = [];
+  for (const l of lines) {
+    if (l.file) {
+      const f = resolve(root, l.file);
+      if (!existsSync(f)) throw new Error(`voice file not found: ${l.file}`);
+      out.push({ at: l.at, file: f, dur: duration(f), text: l.text || l.file }); continue;
+    }
+    const r = l.rate || rate;
+    const refHash = provider === 'chatterbox' && spec.includes('@') && existsSync(resolve(root, spec.split('@')[1])) ? createHash('sha1').update(readFileSync(resolve(root, spec.split('@')[1]))).digest('hex').slice(0, 8) : '';
+    const id = createHash('sha1').update(`${provider}|${spec}|${refHash}|${r}|${l.text}`).digest('hex').slice(0, 16);
+    const f = join(cache, `${id}.wav`);
+    if (!existsSync(f)) {
+      if (provider === 'piper') piper(l.text, spec, r, f);
+      else if (provider === 'google') await google(l.text, spec, r, f);
+      else if (provider === 'chatterbox') chatterbox(l.text, spec, r, f, root, l);
+      else if (provider === 'kokoro') kokoro(l.text, spec, r, f);
+      else throw new Error(`unknown voice provider "${provider}" (piper, kokoro, google or chatterbox)`);
+    }
+    out.push({ at: l.at, file: f, dur: duration(f), text: l.text });
+  }
+  return out;
+}
+
+// Where the piper executable's own Python lives (to run its voice downloader).
+export function piperPython() {
+  const bin = piperBin(); if (!bin) return null;
+  const first = readFileSync(realpathSync(bin), 'utf8').split('\n')[0];
+  return first.startsWith('#!') ? first.slice(2).trim() : null;
+}
