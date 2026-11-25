@@ -14,8 +14,10 @@ to MP4, in the formats the platforms want:
 | landscape | 1920×1080 | YouTube, websites, slides |
 
 Ask your agent something like *"make a 15-second launch video for my app for Instagram Reels"* or *"animate our
-new website for LinkedIn"*: it writes a storyboard, picks a style and the moves, builds the video, runs the
-quality check, looks at the frames on a contact sheet and renders the MP4s.
+new website for LinkedIn"*: it reads the site or app, identifies the business's sector (health, e-commerce,
+education…), writes a concept and a storyboard from that sector's card, picks a style and the moves, builds the
+video, runs the quality check, looks at the frames on a contact sheet and renders the MP4s. Two clients from
+different sectors get different films, not one recipe in other colours; the format stays the same.
 
 ## Install
 
@@ -58,14 +60,21 @@ Open `video.html?format=feed&t=4` in a browser to look at any moment while you e
   `collage` 16 s (photos and price tags on paper), `map-story` 16.4 s (towns light up with real counts on a map;
   `scripts/geo-outline.mjs` makes the outline from a GeoJSON country or region), `parcel-3d` 14.4 s (an unboxing in 3D),
   `grid-montage` 13.4 s (a grid cutting on the beat).
-- **6 styles**: `midnight-glow`, `pastel-pop`, `bold-type`, `clean-light`, `neon-lime`, `warm-editorial`.
+- **6 styles**: `midnight-glow`, `pastel-pop`, `bold-type`, `clean-light`, `neon-lime`, `warm-editorial`, each
+  matched to the sectors it suits; the client's colours go on top.
 - **28 moves** documented with markup in `skills/motion-video/references/moves.md`, including transitions with a
   cause (punch-in camera, object becomes the world, iris from the tap, colour flood, whip), the UI acting (a
   finger picks an answer, a chat writes itself, progress fills), the slow push that keeps every beat alive, and
   eases by role.
-- **A concept step and a critique loop**: two concepts offered before any code (the message, the viewer's problem,
-  the product's answer shown, the visual idea, the proof), then the film scored on six criteria from sheets at four
-  frames a second around each transition, and revised until every score reaches 4.
+- **Sector first**: 13 sector cards in `skills/motion-video/references/sectors.md` (e-commerce, education,
+  coaching and sport, local services, SaaS, food, fintech, health, real estate, transport, events, non-profits,
+  travel). The agent reads the site, announces the sector, medium and business model in one line with its clues
+  (a main and a secondary sector for a mixed business), then builds from that card: the trigger, the proof to show,
+  the structure, the visual genres and presets that suit it, the call to action and the traps to avoid.
+- **A concept step and a critique loop**: two concepts in two different genres from the sector card, offered before
+  any code (the message, the viewer's problem, the product's answer shown, the visual idea, the proof), then the
+  film scored on eight criteria (including the sector's proof and its traps) from sheets at four frames a second
+  around each transition, and revised until every score reaches 4.
 - **An engine** of plain CSS keyframes and `data-` attributes (`data-in="fadeUp@1.2"`, `data-words`,
   `data-ticker`, `data-count`, `data-type`…), and a deterministic renderer (Playwright + ffmpeg).
 - **A quality check** (`check.mjs`) that plays the video and measures every line of text every 0.1 s in every
