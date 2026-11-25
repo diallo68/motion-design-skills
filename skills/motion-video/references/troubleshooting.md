@@ -30,5 +30,6 @@
 | Words split oddly | `data-words` splits text nodes on spaces; use `&nbsp;` to keep two words together |
 | Ticker cuts a word | each `<span>` inside the ticker must be one line; shorten the word or lower the font size |
 | Blank frames at the start | images not local or too large; keep assets in the project and under ~3 MB each |
-| Render is slow | it is about 0.2–0.6 s per frame (×4–5 with `--scale 2`, ×N with `--motion-blur N`, and they multiply); render one format with `--format`, check with `--sheet` first, keep the quality options for the final render |
+| Render is slow | a 2D page captures in about 0.1 s a frame, a 3D page 0.4–0.8 s (×4–5 with `--scale 2`, ×N with `--motion-blur N`, and they multiply), shared between `--workers` browsers; another render or check running at the same time halves it: run them one after another. Render one format with `--format`, check with `--sheet` first, keep the quality options for the final render |
+| A 2D page draws wrong without software GL | the page uses WebGL that `render.mjs` did not detect (it looks for `scene3d`, three.js or `getContext('webgl')`): import three.js or scene3d by name so it is detected |
 | Video not accepted by a platform | outputs are H.264, yuv420p, 30 fps, faststart: accepted everywhere; add `--fps 60` only if asked |

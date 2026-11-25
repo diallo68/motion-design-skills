@@ -219,9 +219,10 @@ node engine/render.mjs video.html --scale 2 --motion-blur   # final render only:
 For the files that will be posted, and only for them, render with `--scale 2` (every frame at twice the size, PNG,
 scaled down with lanczos: finer 3D edges and pictures; flat HTML text gains little) and `--motion-blur` on films
 with whips and fast moves (8 sub-frames blended into each frame; with 3 or 4 a fast move shows as separate copies).
-Their cost, measured on a laptop: `--scale 2` multiplies the render time by 4 to 5 (a 12 s story: about 15 min
-instead of 3), `--motion-blur N` by N, and both multiply (×35 or more). Draft, check and review the sheets at
-`--scale 1`; render the final once. Deliver the MP4 that
+Their cost: `--scale 2` multiplies the render time by 4 to 5, `--motion-blur N` by N, and both multiply. Frames are
+captured by several browsers at once (`--workers`, auto from the machine's cores, up to 4), and a 2D page renders
+without Chrome's software GL, so a 17 s story previews in about 30 s on a 16-core laptop; 3D pages stay slower
+(software WebGL). Draft, check and review the sheets at `--scale 1`; render the final once. Deliver the MP4 that
 `render.mjs` wrote as it is: re-encoding it (an editor's export, a converter, a messaging app) compresses it a
 second time and softens the text.
 

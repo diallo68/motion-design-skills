@@ -11,6 +11,8 @@
 //   node render.mjs video.html --png                 PNG frames at scale 1 (lossless; about 75 % slower than the default JPEG 100)
 //   node render.mjs video.html --motion-blur         8 sub-frames blended into each frame (fast moves blur like film;
 //                                                    --motion-blur N for another count; it costs N times the render)
+//   node render.mjs video.html --workers 4           frames captured by 4 browsers side by side (default: auto, from
+//                                                    the machine's cores, up to 4; --workers 1 for one browser)
 //   node render.mjs video.html --fps 60 --audio music.mp3 --out renders
 //   node render.mjs video.html --sfx off             no sound effects (they play when <body data-sfx="auto">
 //                                                    or elements carry data-sfx); --music-volume 0.55
@@ -22,7 +24,8 @@
 import { spawn, spawnSync } from 'node:child_process';
 import { mkdir, rm } from 'node:fs/promises';
 import { join, resolve } from 'node:path';
-import { SIZES, options, loadPlaywright, serve, openFormat, pickFormats } from './page.mjs';
+import { cpus } from 'node:os';
+import { SIZES, options, loadPlaywright, serve, openFormat, pickFormats, usesWebGL } from './page.mjs';
 import { ensureSfx, mix } from './sound.mjs';
 import { synthesize, DEFAULT_VOICE } from './voice.mjs';
 
@@ -34,8 +37,12 @@ const scale = Math.max(1, Math.min(3, +opt('scale', 1) || 1));
 // --motion-blur alone means 8 sub-frames: with 3 or 4, a fast move shows as separate copies instead of a blur
 const mb = opt('motion-blur');
 const blur = mb === undefined ? 1 : mb !== true && Number.isFinite(+mb) ? Math.max(1, Math.round(+mb)) : 8;
+// frames are captured by several browsers at once and written in order: each seek(t) is independent, so the video
+// is the same as with one browser, and a machine with free cores renders 2-3 times faster
+const wk = opt('workers', 'auto');
+const workers = wk === 'auto' || wk === true ? Math.max(1, Math.min(4, Math.floor(cpus().length / 4))) : Math.max(1, Math.min(8, Math.round(+wk) || 1));
 
-const chromium = await loadPlaywright();
+const chromium = await loadPlaywright({ webgl: usesWebGL(file) });
 const hasFfmpeg = spawnSync('ffmpeg', ['-version']).status === 0;
 const site = await serve(file);
 const fps = +opt('fps', 30); const out = resolve(opt('out', join(site.root, 'renders')));
@@ -111,25 +118,42 @@ for (const format of formats) {
     };
     // a capture that times out (a heavy frame, a busy machine) is tried once more before the render stops
     const shot = png ? { type: 'png' } : { type: 'jpeg', quality: 100 };
-    const shoot = async () => {
-      try { return await page.screenshot({ ...shot, timeout: 60000 }); } catch {
-        try { return await page.screenshot({ ...shot, timeout: 120000 }); } catch (e) { await fail(`a frame could not be captured twice (${e.message.split('\n')[0]}); close other renders and checks, or render without --scale`); }
+    const shoot = async (pg) => {
+      try { return await pg.screenshot({ ...shot, timeout: 60000 }); } catch {
+        try { return await pg.screenshot({ ...shot, timeout: 120000 }); } catch (e) { await fail(`a frame could not be captured twice (${e.message.split('\n')[0]}); close other renders and checks, or render with --workers 1 or without --scale`); }
       }
     };
-    for (let i = 0; i < frames; i++) {
-      // sub-frames spread over half the frame interval: a 180° shutter, as a film camera blurs
-      for (let k = 0; k < blur; k++) {
-        await page.evaluate((t) => window.seek(t), i / fps + (blur > 1 ? (k / blur) * (0.5 / fps) : 0));
-        const buf = await shoot();
-        if (ffDone) await fail('ffmpeg stopped early (its error is above)');
-        if (!ff.stdin.write(buf)) await new Promise((r) => { ff.stdin.once('drain', r); ff.once('close', r); });
+    // one page per worker, each in its own browser (one browser shares a single compositor between its pages)
+    const extra = [];
+    for (let w = 1; w < workers; w++) { const b = await chromium.launch(); extra.push(b); extra.push((await openFormat(b, site.url, format, scale)).page); }
+    const pages = [page, ...extra.filter((x, i) => i % 2 === 1)];
+    // capture c is frame floor(c / blur), sub-frame c % blur: sub-frames spread over half the frame interval, a 180°
+    // shutter, as a film camera blurs
+    const total = frames * blur; const at = (c) => Math.floor(c / blur) / fps + (blur > 1 ? ((c % blur) / blur) * (0.5 / fps) : 0);
+    const ready = new Map(); let next = 0; let wake = null;
+    const AHEAD = pages.length * 3;                   // a worker waits when it runs this far ahead of the writer
+    const work = async (pg, w) => {
+      for (let c = w; c < total; c += pages.length) {
+        while (c - next > AHEAD) await new Promise((r) => setTimeout(r, 5));
+        await pg.evaluate((t) => window.seek(t), at(c));
+        ready.set(c, await shoot(pg)); if (wake) { wake(); wake = null; }
       }
-      if (i % fps === 0) process.stdout.write(`\r${tag}: ${Math.round((i / frames) * 100)}%   `);
+    };
+    const running = Promise.all(pages.map(work));
+    while (next < total) {
+      if (!ready.has(next)) { await new Promise((r) => { wake = r; setTimeout(r, 50); }); continue; }
+      const buf = ready.get(next); ready.delete(next);
+      if (ffDone) await fail('ffmpeg stopped early (its error is above)');
+      if (!ff.stdin.write(buf)) await new Promise((r) => { ff.stdin.once('drain', r); ff.once('close', r); });
+      next++;
+      if (next % (fps * blur) === 0) process.stdout.write(`\r${tag}: ${Math.round((next / total) * 100)}%   `);
     }
+    await running;
+    for (const x of extra) await x.close();
     ff.stdin.end(); const code = await ffClosed;
     if (wav) await rm(wav, { force: true });
     if (code !== 0) { await rm(f, { force: true }); console.error(`\n${tag}: ffmpeg failed (exit ${code}); nothing was written.`); process.exit(1); }
-    console.log(`\rvideo ${f} (${duration}s, ${fps} fps${scale > 1 ? `, ×${scale} supersampled` : ''}${blur > 1 ? `, motion blur ${blur}` : ''})`);
+    console.log(`\rvideo ${f} (${duration}s, ${fps} fps${scale > 1 ? `, ×${scale} supersampled` : ''}${blur > 1 ? `, motion blur ${blur}` : ''}, ${workers} worker${workers > 1 ? 's' : ''})`);
   }
   await page.close();
 }

@@ -117,7 +117,9 @@ read as a line (`.phone` and `.browser` content is treated so already) · `note`
 at twice the size in PNG and scaled down with lanczos: supersampling, 3D included; ×4–5 the render time) ·
 `--motion-blur [N]` (N sub-frames, 8 by default, over half the frame interval, blended: a 180° shutter; ×N the
 render time) · `--png` (PNG frames at scale 1) · `--audio`, `--music-volume`, `--sfx off`, `--voice` ·
-`--out dir`. Frames go to x264 as JPEG at quality 100 (PNG with `--scale 2`), and the MP4 is yuv420p in TV range;
+`--workers N` (frames captured by N browsers side by side and written in order: same video, faster; default auto,
+from the cores, up to 4; `--workers 1` on a busy or small machine) · `--out dir`. A page without WebGL renders
+without Chrome's software GL (SwiftShader), about 5 times faster a frame; a 3D page keeps it. Frames go to x264 as JPEG at quality 100 (PNG with `--scale 2`), and the MP4 is yuv420p in TV range;
 deliver it without re-encoding. A capture that times out is tried once more; a failed render removes its MP4
 and temporary sound file.
 
