@@ -33,7 +33,7 @@ Collect, from the conversation, the repository or the live site first:
   numbers (users, ratings, prices) and whether the app is already in the stores.
 - **Language** of the on-screen text (match the audience, not this file).
 
-**Real screens first.** If the app runs in an emulator, device or simulator, capture its real screens (step 5)
+**Real screens first.** If the app runs in an emulator, device or simulator, capture its real screens (step 7)
 instead of redrawing them: a video built from the real UI beats invented screens. Redraw in HTML only what cannot
 be captured, from the app's own code and colours. Ask at most three short questions, and only about things that change the video.
 
@@ -48,7 +48,22 @@ The eight templates lay out all four formats (landscape puts the text beside the
 person needs in `<body data-formats>`, and `check` every one: a layout that works in story often overflows in
 feed or landscape.
 
-### 2. Concept before the storyboard
+### 2. Identify the sector
+
+The sector decides the story, the proof, the genre and the look; the format does not. Two clients from different
+sectors never get the same film in other colours. Before any concept:
+1. Read the site, the app or the repository and note the clues listed in `references/sectors.md`.
+2. Classify on three axes: the **sector** (one card of `sectors.md`, or "no card"), the **medium** (mobile app,
+   site, or both) and the **model** (direct sale, subscription, matchmaking, booking, free with ads, donation).
+3. For a mixed business, name one main sector (the one in the site's main title, or what the client is paid for)
+   and at most one secondary sector, which gets a single beat.
+4. Announce the classification in one line with the clues behind it, then go on without waiting. For example:
+   "Gandal: education (main) + teacher matchmaking (secondary), mobile app + site, HAM subscription. Clues: quizzes
+   by level, list of teachers, plans at 20,000 GNF a month."
+5. Only when the clues contradict each other or are missing, ask the user ONE question instead of guessing (it
+   counts in the brief's three). When no card fits, apply the cards' common rules and say so in the announcement.
+
+### 3. Concept before the storyboard
 
 A video that passes every check can still say nothing: the concept is what it says. Write it in five lines:
 1. **The message**: one sentence the viewer keeps.
@@ -59,27 +74,33 @@ A video that passes every check can still say nothing: the concept is what it sa
    that becomes the next scene, a map that fills, a receipt that prints).
 5. **The proof**: a real number, a real screen, a real price.
 
-Always offer the user **two concepts** that differ in their visual idea, not only in wording, and wait for their
-choice before writing code; when they told you to go ahead without them, or nobody can answer, pick the stronger
-one and say why in the report. Rules for both:
+Start from the main sector's card (step 2): its trigger, its proof and its structure. The card decides the story
+(the order of the beats and the proof); the template decides the layout and the moves. Its structure is given as
+shares of the length, so a 20 s film keeps the same order and proportions as a 15 s one. Leave the card only with a
+reason written in the storyboard.
+
+Always offer the user **two concepts** in **two different genres from the card**, not two variants of one genre
+nor only different wording, and wait for their choice before writing code; when they told you to go ahead without
+them, or nobody can answer, pick the stronger one and say why in the report. Rules for both:
 - **Every question on screen gets the product's answer in the next beat.** "Stuck on an exercise?" is followed by
   the product solving it, not by a feature list.
 - **The client's main promise appears on screen** (from the brief), in their words.
 - **The template is not the concept.** Templates give structure and moves; the story, the screens and every word
   come from the client. `check` reports any phrase or `[placeholder]` of the template still in the video
-  (`template-leftover`). When several videos are made for one client, each gets its own concept and visual idea,
-  not one recipe with new words.
+  (`template-leftover`). When several videos are made for one client, each gets its own concept and a different
+  genre from the card, not one recipe with new words.
 
-### 3. Storyboard
+### 4. Storyboard
 
 Write `storyboard.md` in the project folder, from the chosen concept: a table of beats with start time, what is on
 screen, the words, the move, and what keeps the frame moving while a line holds. Read `references/storyboard.md`
 for timing and structure (a visual hook before 0.5 s, one idea per beat, 6–8 words of on-screen text per beat,
 each format composed for itself, end card 2.5–3 s).
 
-### 4. Pick a look and the moves
+### 5. Pick a look and the moves
 
-- **Style preset** from `styles/` (or the client's own colours on top of one; see `references/styles.md`):
+- **Style preset** from `styles/`, starting with those the sector card names (with the client's own colours on top;
+  see `references/styles.md`):
   `midnight-glow`, `pastel-pop`, `bold-type`, `clean-light`, `neon-lime`, `warm-editorial`.
 - **Moves**: pick 3 to 5 from `references/moves.md` (the catalogue of Dribbble/Pinterest patterns with the exact
   markup for each). A video that uses every move looks like a template demo; one strong move per beat reads as
@@ -87,9 +108,8 @@ each format composed for itself, end card 2.5–3 s).
 - **Transitions with a cause**: join the beats through something on screen, 2 to 4 kinds per film (moves 19–25):
   a punch-in on the part of the screen the line names, the phone growing into the next scene, the next scene
   opening from the button pressed, a whip between two lines. Write each one in the storyboard's Move column.
-- **Shops and catalogues: the products are the film.** For e-commerce, marketplaces and delivery, a phone with
-  a title and chips undersells the catalogue: start from a template that puts the real products forward, and when
-  making several videos, give each a different genre rather than one recipe in several formats. `collage` (product
+- **Genre from the sector card.** Each card lists the genres that suit it. For shops and catalogues the products
+  are the film: a phone with a title and chips undersells the catalogue. The product templates: `collage` (product
   photos slapped on paper with price tags and marker scribbles), `map-story` (the area draws itself, towns light up
   with their real counts; `scripts/geo-outline.mjs` turns a GeoJSON country or region into its outline and places),
   `parcel-3d` (a parcel drops, opens, the products burst out in 3D), `grid-montage` (a grid of cells cutting on the
@@ -105,7 +125,7 @@ each format composed for itself, end card 2.5–3 s).
   through it (the UI acting, a camera move, a 3D orbit). `check` reports 0.8 s where the frame barely changes (a moving background alone does not count) as
   `dead-time`, and a beat of more than 3.5 s where only one thing enters as `long-beat`.
 
-### 5. Start the project
+### 6. Start the project
 
 ```bash
 node <skill>/scripts/init.mjs <folder> --template app-promo|website-launch|social-ad|iso-promo|collage|map-story|parcel-3d|grid-montage --style <preset> [--name video]
@@ -117,7 +137,7 @@ one folder: run `init` again with another `--name`.
 A template just made by `init` fails `check` with `template-leftover` (reported once, for the page) until every
 `[placeholder]` and template phrase is replaced: that error is the list of what is left to write.
 
-### 6. Build the video
+### 7. Build the video
 
 Edit the HTML. Replace every sample name, screen, number and text with the client's. `references/engine.md` is the
 full API; the essentials:
@@ -150,7 +170,7 @@ full API; the essentials:
   message or number. Capture a live site with `node <skill>/scripts/capture.mjs <url> --out assets/site.png` (stop
   above sections showing real people).
 
-### 7. Check, then critique, before you render
+### 8. Check, then critique, before you render
 
 ```bash
 node engine/check.mjs video.html                      # every format: errors and warnings, each with its fix
@@ -179,13 +199,15 @@ make it pass: only real UI inside a device (`ui`), small print (`note`) or a des
    - **Motivated transitions**: each join goes through something on screen.
    - **True to the site**: the client's promise and features, in their words and colours.
    - **Readable on a phone**: sizes, contrast, one focus a beat, in every format.
+   - **Sector proof**: the film shows the proof its sector card asks for, as a moment seen.
+   - **No sector trap**: none of the traps listed in the sector card is in the film.
 3. Revise while any score is below 4, then score again: at least two passes, even when the first looks good.
 4. When you can start a sub-agent, have one that did not write the video do the scoring, from the sheets and the
    concept only; it sees what the author's eye fills in.
 
 Show the user the scores with the sheets when you deliver.
 
-### 8. Sound, render and deliver
+### 9. Sound, render and deliver
 
 ```bash
 node engine/render.mjs video.html                     # MP4 per format in renders/ (H.264, 30 fps), with its effects
@@ -269,6 +291,7 @@ product as if it were the client's.
   structure that passes `check` in all four formats, with its words as `[placeholders]` naming their role (no
   sector, nothing to translate); the product ones draw stand-in images until `PRODUCTS` gets real photos
 - `engine/scene3d.js` and `references/3d.md` — 3D scenes (isometric or perspective) on the video's clock
+- `references/sectors.md` — the sector cards: clues, proof, structure, genres, look, traps
 - `references/moves.md` — the motion patterns with markup · `references/storyboard.md` — structure and timing ·
   `references/engine.md` — every attribute, helper and keyframe · `references/troubleshooting.md`
 - `scripts/init.mjs` — new project · `scripts/capture-app.mjs` — capture the running app (Android, iOS simulator)

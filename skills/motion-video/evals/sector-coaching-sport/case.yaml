@@ -1,0 +1,4 @@
+schema_version: "1.1"
+name: sector-coaching-sport
+expected_outcome: |
+  Before any concept, the sector is identified and announced in one line with its clues: coaching/sport (principal), app mobile, abonnement. The two concepts offered take two different genres from that sector card, the storyboard starts with the sector line, and the rendered video shows the sector proof (un corps en mouvement pendant une séance guidée, puis un suivi qui monte (série, minutes) à l'écran) with none of its traps. It keeps the format asked, passes check with 0 errors and keeps no template text or [placeholder].

@@ -1,0 +1,4 @@
+schema_version: "1.1"
+name: sector-food-restaurant
+expected_outcome: |
+  Before any concept, the sector is identified and announced in one line with its clues: restauration (principal), site, vente directe. The two concepts offered take two different genres from that sector card, the storyboard starts with the sector line, and the rendered video shows the sector proof (un plat en gros plan (texture, vapeur ou service), puis la commande en un geste) with none of its traps. It keeps the format asked, passes check with 0 errors and keeps no template text or [placeholder].

@@ -2,12 +2,15 @@
 
 | Preset | Look | Fits |
 |---|---|---|
-| `midnight-glow` | navy-black, luminous indigo/cyan glows, Inter Tight | AI, fintech, SaaS, premium launches |
-| `pastel-pop` | lilac and peach, round shapes, Nunito, bouncy | consumer apps, kids, food, lifestyle |
-| `bold-type` | black, white and one loud colour, condensed Archivo caps | teasers, ads, "Introducing", events |
-| `clean-light` | white and soft grey, floating cards, Plus Jakarta Sans | productivity, B2B, finance, health |
-| `neon-lime` | green-black with acid lime, Space Grotesk | fitness, gaming, Gen-Z, dev tools |
-| `warm-editorial` | cream paper, Fraunces serif, forest green and ochre | education, culture, food, hospitality |
+| `midnight-glow` | navy-black, luminous indigo/cyan glows, Inter Tight | AI, fintech, SaaS, premium launches; sectors 5, 7, 8 (night), 10 |
+| `pastel-pop` | lilac and peach, round shapes, Nunito, bouncy | consumer apps, kids, food, lifestyle; sectors 1, 6, 13 |
+| `bold-type` | black, white and one loud colour, condensed Archivo caps | teasers, ads, "Introducing", events; sectors 1, 3, 11 |
+| `clean-light` | white and soft grey, floating cards, Plus Jakarta Sans | productivity, B2B, finance, health; sectors 2, 4, 5, 7, 8, 9, 12 |
+| `neon-lime` | green-black with acid lime, Space Grotesk | fitness, gaming, Gen-Z, dev tools; sectors 3, 10, 11 |
+| `warm-editorial` | cream paper, Fraunces serif, forest green and ochre | education, culture, food, hospitality; sectors 2, 4, 6, 9, 12, 13 |
+
+Sector numbers point to the cards of `references/sectors.md`. The client's palette always comes before the
+preset: the preset gives the character (type, shapes, rhythm), the brand gives the colours.
 
 ## Brand a preset
 Keep the preset's structure and override the variables at the top of the video (or in `style.css`):
