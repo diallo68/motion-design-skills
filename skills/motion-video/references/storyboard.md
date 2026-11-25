@@ -30,7 +30,14 @@
 Add a Sound column when the film has music or a sound that matters (the auto effects need no planning), and a
 Voice column for a voice-over: one short line per beat, about 2.5 words a second, never more than the beat holds.
 
-Start the file with the five lines of the concept (SKILL.md, step 2), then the beats. The example shows the
+Start the file with one line for the sector (SKILL.md, step 2), then the five lines of the concept (step 3),
+then the beats:
+
+```
+Sector: … · Medium: … · Model: … · Genre: … · Proof: …
+```
+
+The beats follow the order and proportions of the sector card's structure. The example shows the
 shape only: its words are placeholders for the client's.
 
 | Time | On screen | Words | Move | Alive while it holds |

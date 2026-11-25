@@ -1,0 +1,4 @@
+schema_version: "1.1"
+name: sector-saas-facturation
+expected_outcome: |
+  Before any concept, the sector is identified and announced in one line with its clues: SaaS (principal), site, abonnement. The two concepts offered take two different genres from that sector card, the storyboard starts with the sector line, and the rendered video shows the sector proof (une tâche pénible (faire une facture depuis un devis) faite en un clic dans l'interface, puis un indicateur qui s'améliore (impayés en baisse ou trésorerie)) with none of its traps. It keeps the format asked, passes check with 0 errors and keeps no template text or [placeholder].

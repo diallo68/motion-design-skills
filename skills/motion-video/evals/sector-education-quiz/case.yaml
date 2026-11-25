@@ -1,0 +1,4 @@
+schema_version: "1.1"
+name: sector-education-quiz
+expected_outcome: |
+  Before any concept, the sector is identified and announced in one line with its clues: formation (principal), app mobile, abonnement. The two concepts offered take two different genres from that sector card, the storyboard starts with the sector line, and the rendered video shows the sector proof (un élève bloqué sur une question qui comprend grâce à une explication pas à pas, puis une bonne réponse validée et une barre de progression qui avance) with none of its traps. It keeps the format asked, passes check with 0 errors and keeps no template text or [placeholder].
