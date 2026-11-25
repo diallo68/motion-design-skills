@@ -13,7 +13,7 @@ export function textSegments(html) {
   const out = [];
   const scripts = [...src.matchAll(/<script\b[^>]*>([\s\S]*?)<\/script>/gi)].map((m) => m[1]);
   // string literals that read as words, not code (selectors, markup with handlers, expressions)
-  const code = (x) => /(^|\s)[.#][a-z]|[{};=()]|^[\w-]+$/i.test(x.replace(/<[^>]+>|\$\{[^}]*\}/g, ' ').trim());
+  const code = (x) => /(^|\s)[.#][a-z]|[{};=()]|^[\w-]+$|^\.{0,2}\/|^[\w./-]+\.(m?js|css|html|json|png|jpe?g|webp|svg|mp3|wav|m4a)$/i.test(x.replace(/<[^>]+>|\$\{[^}]*\}/g, ' ').trim());   // selectors, code, file paths
   for (const js of scripts) for (const m of js.replace(/^\s*\/\/.*$/gm, ' ').matchAll(/(['"`])((?:\\.|(?!\1)[^\\])*?)\1/g)) if (!code(m[2])) out.push(strip(m[2]));
   const body = src.replace(/<script\b[\s\S]*?<\/script>/gi, ' ');
   for (const m of body.matchAll(/\bdata-vo="([^"]*)"/g)) out.push(strip(m[1]));
